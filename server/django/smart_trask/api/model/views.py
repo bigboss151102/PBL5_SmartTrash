@@ -32,10 +32,10 @@ model = load_model(
 
 
 class ImageClassifier(viewsets.ModelViewSet):
-    serializer_class = PredictSerializer()
-
     prediction = None
     percent_predict = None
+
+    serializer_class = PredictSerializer()
 
     @action(detail=False, methods=['POST'])
     def predict(self, request):
@@ -49,19 +49,34 @@ class ImageClassifier(viewsets.ModelViewSet):
 
             prediction_prob = model.predict(test_img)
             print(prediction_prob)
-            if prediction_prob.any():
-                if (prediction_prob[0][1] * 100) >= 90:
-                    prediction = "Glass"
-                    percent_predict = prediction_prob[0][1] * 100
-                elif (prediction_prob[0][2] * 100) >= 90:
-                    prediction = "Metal"
-                    percent_predict = prediction_prob[0][2] * 100
-                elif (prediction_prob[0][4] * 100) >= 90:
-                    prediction = "Plastic"
-                    percent_predict = prediction_prob[0][4] * 100
-                else:
-                    prediction = "Loại rác khác"
-                    percent_predict = 0
+
+            max_index = np.argmax(prediction_prob)
+            print(max_index)
+            max_value = prediction_prob[0][max_index]
+            print(max_value)
+            switcher = {
+                0: 'Cardboard',
+                1: 'Glass',
+                2: 'Metal',
+                3: 'Paper',
+                4: 'Plastic',
+            }
+            prediction = switcher.get(max_index, 'Trash')
+
+            percent_predict = max_value * 100
+            # if prediction_prob.any():
+            #     if (prediction_prob[0][1] * 100) >= 90:
+            #         prediction = "Glass"
+            #         percent_predict = prediction_prob[0][1] * 100
+            #     elif (prediction_prob[0][2] * 100) >= 90:
+            #         prediction = "Metal"
+            #         percent_predict = prediction_prob[0][2] * 100
+            #     elif (prediction_prob[0][4] * 100) >= 90:
+            #         prediction = "Plastic"
+            #         percent_predict = prediction_prob[0][4] * 100
+            #     else:
+            #         prediction = "Loại rác khác"
+            #         percent_predict = 0
             response_data = {
                 "message": "Dự đoán thành công !",
                 "predict_result": prediction,
@@ -118,19 +133,34 @@ class ImageClassifier(viewsets.ModelViewSet):
 
                 prediction_prob = model.predict(test_img)
                 print(prediction_prob)
-                if prediction_prob.any():
-                    if (prediction_prob[0][1] * 100) >= 90:
-                        prediction = "Glass"
-                        percent_predict = prediction_prob[0][1] * 100
-                    elif (prediction_prob[0][2] * 100) >= 90:
-                        prediction = "Metal"
-                        percent_predict = prediction_prob[0][2] * 100
-                    elif (prediction_prob[0][4] * 100) >= 90:
-                        prediction = "Plastic"
-                        percent_predict = prediction_prob[0][4] * 100
-                    else:
-                        prediction = "Loại rác khác"
-                        percent_predict = 0
+
+                max_index = np.argmax(prediction_prob)
+                print(max_index)
+                max_value = prediction_prob[0][max_index]
+                print(max_value)
+                switcher = {
+                    0: 'Cardboard',
+                    1: 'Glass',
+                    2: 'Metal',
+                    3: 'Paper',
+                    4: 'Plastic',
+                }
+                prediction = switcher.get(max_index, 'Trash')
+
+                percent_predict = max_value * 100
+                # if prediction_prob.any():
+                #     if (prediction_prob[0][1] * 100) >= 90:
+                #         prediction = "Glass"
+                #         percent_predict = prediction_prob[0][1] * 100
+                #     elif (prediction_prob[0][2] * 100) >= 90:
+                #         prediction = "Metal"
+                #         percent_predict = prediction_prob[0][2] * 100
+                #     elif (prediction_prob[0][4] * 100) >= 90:
+                #         prediction = "Plastic"
+                #         percent_predict = prediction_prob[0][4] * 100
+                #     else:
+                #         prediction = "Loại rác khác"
+                #         percent_predict = 0
                 response_data = {
                     "message": "Dự đoán thành công !",
                     "predict_result": prediction,
