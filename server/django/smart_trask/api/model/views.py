@@ -25,7 +25,7 @@ from keras.models import load_model
 from .serializers import PredictSerializer
 from io import BytesIO
 
-ESP_IP = "10.10.58.221"
+ESP_IP = "192.168.50.11"
 
 model = load_model(
     'C:/PBL5/SmartTrash/ai/model/fine_tunning_resnet50_model.h5')
@@ -51,9 +51,9 @@ class ImageClassifier(viewsets.ModelViewSet):
             print(prediction_prob)
 
             max_index = np.argmax(prediction_prob)
-            print(max_index)
+            print("Index of max value: ", max_index)
             max_value = prediction_prob[0][max_index]
-            print(max_value)
+            print("Max value: ", max_value)
             switcher = {
                 0: 'Cardboard',
                 1: 'Glass',
@@ -64,19 +64,6 @@ class ImageClassifier(viewsets.ModelViewSet):
             prediction = switcher.get(max_index, 'Trash')
 
             percent_predict = max_value * 100
-            # if prediction_prob.any():
-            #     if (prediction_prob[0][1] * 100) >= 90:
-            #         prediction = "Glass"
-            #         percent_predict = prediction_prob[0][1] * 100
-            #     elif (prediction_prob[0][2] * 100) >= 90:
-            #         prediction = "Metal"
-            #         percent_predict = prediction_prob[0][2] * 100
-            #     elif (prediction_prob[0][4] * 100) >= 90:
-            #         prediction = "Plastic"
-            #         percent_predict = prediction_prob[0][4] * 100
-            #     else:
-            #         prediction = "Loại rác khác"
-            #         percent_predict = 0
             response_data = {
                 "message": "Dự đoán thành công !",
                 "predict_result": prediction,
