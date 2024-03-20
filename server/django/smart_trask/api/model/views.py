@@ -25,7 +25,7 @@ from keras.models import load_model
 from .serializers import PredictSerializer
 from io import BytesIO
 
-ESP_IP = "192.168.50.11"
+ESP_IP = "10.10.59.173"
 
 model = load_model(
     'C:/PBL5/SmartTrash/ai/model/fine_tunning_resnet50_model.h5')
