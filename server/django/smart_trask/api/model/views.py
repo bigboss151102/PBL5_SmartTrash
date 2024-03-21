@@ -28,7 +28,7 @@ from io import BytesIO
 ESP_IP = "10.10.59.173"
 
 model = load_model(
-    'C:/PBL5/SmartTrash/ai/model/fine_tunning_resnet50_model.h5')
+    'E:/Ki6/PBL5/ai/Model/fine_tunning_resnet50_model.h5')
 
 
 class ImageClassifier(viewsets.ModelViewSet):
