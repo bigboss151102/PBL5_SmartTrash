@@ -25,13 +25,15 @@ from keras.models import load_model
 from .serializers import PredictSerializer
 from io import BytesIO
 
-ESP_IP = "10.10.59.173"
+from api.models import *
+
+ESP_IP = "172.20.10.7"
 
 model = load_model(
-    'C:/PBL5/SmartTrash/ai/model/fine_tunning_resnet50_model.h5')
+    'C:/PBL5/SmartTrash/ai/model/fine_tunning_resnet50_model_custom_data_31_03.h5')
 
 
-class ImageClassifier(viewsets.ModelViewSet):
+class ImageClassifierMVS(viewsets.ModelViewSet):
     prediction = None
     percent_predict = None
 
@@ -55,11 +57,9 @@ class ImageClassifier(viewsets.ModelViewSet):
             max_value = prediction_prob[0][max_index]
             print("Max value: ", max_value)
             switcher = {
-                0: 'Cardboard',
-                1: 'Glass',
-                2: 'Metal',
-                3: 'Paper',
-                4: 'Plastic',
+                0: 'Metal',
+                1: 'paper',
+                2: 'plastic',
             }
             prediction = switcher.get(max_index, 'Trash')
 
@@ -78,29 +78,28 @@ class ImageClassifier(viewsets.ModelViewSet):
             status=status.HTTP_400_BAD_REQUEST
         )
 
-    @action(detail=False, methods=['GET'], url_path="get_image_from_esp32", url_name='get_image_from_esp32')
-    def get_image_from_esp32(self, request,  *args, **kwargs):
-        # ESP_IP = "10.10.58.221"
-        image_url = f"http://{ESP_IP}/cam-hi.jpg"
-        # return Response(BytesIO(response.content), media_type="image/jpeg")
-        try:
-            response = requests.get(image_url)
-            if response.status_code == 200:
-                image = Image.open(BytesIO(response.content))
-                buffered = BytesIO()
-                image.save(buffered, format="JPEG")
-                image_base64 = base64.b64encode(
-                    buffered.getvalue()).decode('utf-8')
-                return Response({'image_base64': image_base64}, status=status.HTTP_200_OK)
-            else:
-                return Response({'error': 'Failed to fetch image'}, status=response.status_code)
-        except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    # @action(detail=False, methods=['GET'], url_path="get_image_from_esp32", url_name='get_image_from_esp32')
+    # def get_image_from_esp32(self, request,  *args, **kwargs):
+    #     # ESP_IP = "10.10.58.221"
+    #     image_url = f"http://{ESP_IP}/cam-hi.jpg"
+    #     # return Response(BytesIO(response.content), media_type="image/jpeg")
+    #     try:
+    #         response = requests.get(image_url)
+    #         if response.status_code == 200:
+    #             image = Image.open(BytesIO(response.content))
+    #             buffered = BytesIO()
+    #             image.save(buffered, format="JPEG")
+    #             image_base64 = base64.b64encode(
+    #                 buffered.getvalue()).decode('utf-8')
+    #             return Response({'image_base64': image_base64}, status=status.HTTP_200_OK)
+    #         else:
+    #             return Response({'error': 'Failed to fetch image'}, status=response.status_code)
+    #     except Exception as e:
+    #         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @action(detail=False, methods=['GET'], url_path="predict_image_from_esp32", url_name='predict_image_from_esp32')
     def predict_image_from_esp32(self, request,  *args, **kwargs):
-        # ESP_IP = "10.10.58.221"
-        serializer_class = PredictSerializer
+        # serializer_class = PredictSerializer
         image_url = f"http://{ESP_IP}/cam-hi.jpg"
         try:
             response = requests.get(image_url)
@@ -122,32 +121,17 @@ class ImageClassifier(viewsets.ModelViewSet):
                 print(prediction_prob)
 
                 max_index = np.argmax(prediction_prob)
-                print(max_index)
+                print("Index of max value: ", max_index)
                 max_value = prediction_prob[0][max_index]
-                print(max_value)
+                print("Max value: ", max_value)
                 switcher = {
-                    0: 'Cardboard',
-                    1: 'Glass',
-                    2: 'Metal',
-                    3: 'Paper',
-                    4: 'Plastic',
+                    0: 'Metal',
+                    1: 'paper',
+                    2: 'plastic',
                 }
                 prediction = switcher.get(max_index, 'Trash')
 
                 percent_predict = max_value * 100
-                # if prediction_prob.any():
-                #     if (prediction_prob[0][1] * 100) >= 90:
-                #         prediction = "Glass"
-                #         percent_predict = prediction_prob[0][1] * 100
-                #     elif (prediction_prob[0][2] * 100) >= 90:
-                #         prediction = "Metal"
-                #         percent_predict = prediction_prob[0][2] * 100
-                #     elif (prediction_prob[0][4] * 100) >= 90:
-                #         prediction = "Plastic"
-                #         percent_predict = prediction_prob[0][4] * 100
-                #     else:
-                #         prediction = "Loại rác khác"
-                #         percent_predict = 0
                 response_data = {
                     "message": "Dự đoán thành công !",
                     "predict_result": prediction,
@@ -156,3 +140,33 @@ class ImageClassifier(viewsets.ModelViewSet):
                 return Response(data=response_data, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @action(detail=False, methods=['GET'], url_path="get_image_by_id_garbage_info", url_name='get_image_by_id_garbage_info')
+    def get_image_by_id_garbage_info(self, request,  *args, **kwargs):
+        try:
+            id_garbage = kwargs['id']
+            print("Giá trị của id là: ", id_garbage)
+            if id_garbage == 0:
+                return Response(data={}, status=status.HTTP_200_OK)
+
+            garbage_info = GarbageInfo.objects.get(pk=id_garbage)
+
+            if garbage_info.image_garbage_predict:
+                image_url = request.build_absolute_uri(
+                    garbage_info.image_garbage_predict.url)
+                return Response(
+                    data={
+                        'image_url': image_url
+                    },
+                    status=status.HTTP_200_OK
+                )
+            else:
+                return Response(
+                    data={
+                        'error': 'Image not available'
+                    },
+                    status=status.HTTP_404_NOT_FOUND
+                )
+        except Exception as error:
+            print("ImageClassifierMVS_get_image_by_id_garbage_info: ", error)
+        return Response({'error': 'Bad request'}, status=status.HTTP_400_BAD_REQUEST)
