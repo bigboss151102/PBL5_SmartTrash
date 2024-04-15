@@ -1,3 +1,4 @@
+from ipaddress import ip_address
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from rest_framework.response import Response
@@ -27,11 +28,14 @@ from io import BytesIO
 
 from api.models import *
 
-ESP_IP = "172.20.10.7"
-ESP8266_IP = "192.168.8.22"
+from utils.ip_address import ESP_IP, ESP8266_IP
+from utils.path_address import PATH_MODEL
+ESP_IP = ESP_IP
+ESP8266_IP = ESP8266_IP
 
-model = load_model(
-    'C:/PBL5/SmartTrash/ai/model/fine_tunning_resnet50_model_custom_data_31_03.h5')
+PATH_MODEL = PATH_MODEL
+
+model = load_model(PATH_MODEL)
 
 
 class ImageClassifierMVS(viewsets.ModelViewSet):
