@@ -162,3 +162,4 @@ cython_debug/
 /ai/model
 /server/django/smart_trask/api/migrations
 /server/django/smart_trask/media
+/server/django/smart_trask/utils
