@@ -44,8 +44,8 @@ class ImageClassifierMVS(viewsets.ModelViewSet):
 
     serializer_class = PredictSerializer()
 
-    @action(detail=False, methods=['POST'])
-    def predict(self, request):
+    @action(detail=False, methods=['POST'], url_path="predict_image", url_name='predict_image')
+    def predict_image(self, request):
         serializer = PredictSerializer(data=request.data)
         if serializer.is_valid():
             image = serializer.validated_data['image']
@@ -79,12 +79,6 @@ class ImageClassifierMVS(viewsets.ModelViewSet):
                 "max_index": max_index,
                 "max_value": max_value,
                 "prediction": prediction
-            }
-            percent_predict = max_value * 100
-            response_data = {
-                "message": "Dự đoán thành công !",
-                "predict_result": prediction,
-                "predict_percent": percent_predict,
             }
             SERVO_CONTROL_ENDPOINT = "esp_8266"
             esp8266_url = f"http://{ESP8266_IP}/{SERVO_CONTROL_ENDPOINT}"
@@ -203,4 +197,18 @@ class ImageClassifierMVS(viewsets.ModelViewSet):
                 )
         except Exception as error:
             print("ImageClassifierMVS_get_image_by_id_garbage_info: ", error)
+        return Response({'error': 'Bad request'}, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=['GET'], url_path="test_get", url_name='test_get')
+    def test_get(self, request,  *args, **kwargs):
+        try:
+            prediction = "Hello World"
+            return Response(
+                data={
+                    'prediction': prediction
+                },
+                status=status.HTTP_200_OK
+            )
+        except Exception as error:
+            print("Test get: ", error)
         return Response({'error': 'Bad request'}, status=status.HTTP_400_BAD_REQUEST)
