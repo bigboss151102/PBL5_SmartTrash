@@ -28,6 +28,7 @@ from io import BytesIO
 from api.models import *
 
 ESP_IP = "172.20.10.7"
+ESP8266_IP = "192.168.1.15"
 
 model = load_model(
     'C:/PBL5/SmartTrash/ai/model/fine_tunning_resnet50_model_custom_data_31_03.h5')
@@ -52,9 +53,9 @@ class ImageClassifierMVS(viewsets.ModelViewSet):
             prediction_prob = model.predict(test_img)
             print(prediction_prob)
 
-            max_index = np.argmax(prediction_prob)
+            max_index = int(np.argmax(prediction_prob))
             print("Index of max value: ", max_index)
-            max_value = prediction_prob[0][max_index]
+            max_value = prediction_prob[0][max_index].astype(float)
             print("Max value: ", max_value)
             switcher = {
                 0: 'Metal',
@@ -70,7 +71,24 @@ class ImageClassifierMVS(viewsets.ModelViewSet):
                 "predict_percent": percent_predict,
             }
 
-            return Response(data=response_data, status=status.HTTP_200_OK)
+            data_to_send = {
+                "max_index": max_index,
+                "max_value": max_value,
+                "prediction": prediction
+            }
+            SERVO_CONTROL_ENDPOINT = "esp_8266"
+            esp8266_url = f"http://{ESP8266_IP}/{SERVO_CONTROL_ENDPOINT}"
+            response = requests.post(esp8266_url, json=data_to_send)
+
+            if response.status_code == 200:
+                percent_predict = max_value * 100
+                response_data = {
+                    "message": "Dự đoán thành công !",
+                    "predict_result": prediction,
+                    "predict_percent": percent_predict,
+                }
+                return Response(data=response_data, status=status.HTTP_200_OK)
+            return Response(data={"message": "Dự đoán thành công nhưng không thể điều khiển servo!"}, status=status.HTTP_400_BAD_REQUEST)
         return Response(
             data={
                 'message': "Không dự đoán được Image .Vui lòng thử lại"
@@ -131,13 +149,25 @@ class ImageClassifierMVS(viewsets.ModelViewSet):
                 }
                 prediction = switcher.get(max_index, 'Trash')
 
-                percent_predict = max_value * 100
-                response_data = {
-                    "message": "Dự đoán thành công !",
-                    "predict_result": prediction,
-                    "predict_percent": percent_predict,
+                # Send data to ESP8266
+                data_to_send = {
+                    "max_index": max_index,
+                    "max_value": max_value,
+                    "prediction": prediction
                 }
-                return Response(data=response_data, status=status.HTTP_200_OK)
+                SERVO_CONTROL_ENDPOINT = "esp_8266"
+                esp8266_url = f"http://{ESP8266_IP}/{SERVO_CONTROL_ENDPOINT}"
+                response = requests.post(esp8266_url, json=data_to_send)
+
+                if response.status_code == 200:
+                    percent_predict = max_value * 100
+                    response_data = {
+                        "message": "Dự đoán thành công !",
+                        "predict_result": prediction,
+                        "predict_percent": percent_predict,
+                    }
+                    return Response(data=response_data, status=status.HTTP_200_OK)
+                return Response(data={"message": "Dự đoán thành công nhưng không thể điều khiển servo!"}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
