@@ -148,24 +148,25 @@ class ImageClassifierMVS(viewsets.ModelViewSet):
                 prediction = switcher.get(max_index, 'Trash')
 
                 # Send data to ESP8266
+                percent_predict = max_value * 100
+                response_data = {
+                    "message": "Dự đoán thành công !",
+                    "predict_result": prediction,
+                    "predict_percent": percent_predict,
+                }
+
                 data_to_send = {
-                    "max_index": max_index,
-                    "max_value": max_value,
+                    "max_index": int(max_index),
+                    "max_value": float(max_value),
                     "prediction": prediction
                 }
-                SERVO_CONTROL_ENDPOINT = "esp_8266"
-                esp8266_url = f"http://{ESP8266_IP}/{SERVO_CONTROL_ENDPOINT}"
+                # SERVO_CONTROL_ENDPOINT = "esp_8266"
+                esp8266_url = f"http://192.168.1.31/"
                 response = requests.post(esp8266_url, json=data_to_send)
 
                 if response.status_code == 200:
-                    percent_predict = max_value * 100
-                    response_data = {
-                        "message": "Dự đoán thành công !",
-                        "predict_result": prediction,
-                        "predict_percent": percent_predict,
-                    }
-                    return Response(data=response_data, status=status.HTTP_200_OK)
-                return Response(data={"message": "Dự đoán thành công nhưng không thể điều khiển servo!"}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response(data=data_to_send, status=status.HTTP_200_OK)
+                return Response(data=response_data, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -199,7 +200,7 @@ class ImageClassifierMVS(viewsets.ModelViewSet):
             print("ImageClassifierMVS_get_image_by_id_garbage_info: ", error)
         return Response({'error': 'Bad request'}, status=status.HTTP_400_BAD_REQUEST)
 
-    @action(detail=False, methods=['GET'], url_path="test_get", url_name='test_get')
+    @action(detail=False, methods=['POST'], url_path="test_get", url_name='test_get')
     def test_get(self, request,  *args, **kwargs):
         try:
             prediction = "Hello World"

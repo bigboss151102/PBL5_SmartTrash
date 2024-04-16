@@ -20,7 +20,7 @@ get_image_by_id_garbage_info = ImageClassifierMVS.as_view({
 })
 
 test_get = ImageClassifierMVS.as_view({
-    'get': 'test_get'
+    'post': 'test_get'
 })
 
 urlpatterns = [
