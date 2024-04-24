@@ -62,7 +62,7 @@ class GarbageCompartment(models.Model):
 class PredictInfo(models.Model):
     garbage_compartment = models.ForeignKey(
         GarbageCompartment, related_name='garbage_compartment_w_predict_info', on_delete=models.SET_NULL, blank=True, null=True)
-    type_garbage =  models.CharField(max_length=50, null=True, blank=True)
+    type_garbage = models.CharField(max_length=50, null=True, blank=True)
     image_garbage = models.ImageField(
         upload_to='images/', null=True, blank=True)
     predict_precent = models.FloatField(default=0.0)
@@ -76,3 +76,13 @@ class PredictInfo(models.Model):
         if self.garbage_compartment and self.type_garbage and self.predict_precent:
             return str(self.id) + '_' + self.garbage_compartment.name_compartment + '_' + str(self.predict_precent)
         return self.id
+
+
+# class SessionToken(models.Model):
+#     user = models.OneToOneField(
+#         User, on_delete=models.CASCADE, primary_key=True)
+#     token = models.CharField(max_length=500, null=True, blank=False)
+#     hostname = models.CharField(max_length=100, null=True, blank=True)
+#     ip_address = models.CharField(max_length=100, null=True, blank=True)
+#     mac_address = models.CharField(max_length=100, null=True, blank=True)
+#     created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)

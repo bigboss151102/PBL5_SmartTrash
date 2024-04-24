@@ -1,5 +1,8 @@
 from django.contrib import admin
-# from .models import GarbageInfo
+from .models import *
 # Register your models here.
 
-# admin.site.register(GarbageInfo)
+admin.site.register(Profile)
+admin.site.register(Garbage)
+admin.site.register(GarbageCompartment)
+admin.site.register(PredictInfo)
