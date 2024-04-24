@@ -160,6 +160,9 @@ cython_debug/
 #.idea/
 
 /ai/model
+/server/smart_trask/api/migrations
 /server/django/smart_trask/api/migrations
+/server/smart_trask/media
 /server/django/smart_trask/media
+/server/smart_trask/utils
 /server/django/smart_trask/utils
