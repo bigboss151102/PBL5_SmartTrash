@@ -28,12 +28,12 @@ from io import BytesIO
 
 from api.models import *
 
-from utils.ip_address import ESP_IP, ESP8266_IP
-from utils.path_address import PATH_MODEL
-ESP_IP = ESP_IP
-ESP8266_IP = ESP8266_IP
+# from utils.ip_address import ESP_IP, ESP8266_IP
+# from utils.path_address import PATH_MODEL
 
-PATH_MODEL = PATH_MODEL
+ESP_IP = settings.ESP_IP
+ESP8266_IP = settings.ESP8266_IP
+PATH_MODEL = settings.PATH_MODEL
 
 model = load_model(PATH_MODEL)
 
