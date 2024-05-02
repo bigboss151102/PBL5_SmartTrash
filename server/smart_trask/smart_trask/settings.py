@@ -141,3 +141,8 @@ SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=5),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
 }
+
+####
+PATH_MODEL = os.getenv('PATH_MODEL')
+ESP_IP = os.getenv('ESP_IP')
+ESP8266_IP = os.getenv('ESP8266_IP')
