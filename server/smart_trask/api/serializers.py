@@ -5,14 +5,14 @@ from django.core.validators import EmailValidator
 from api.models import *
 
 
-def getUserFromAccessToken(self, access_token):
-    try:
-        access_token = AccessToken(access_token)
-        user_id = access_token["user_id"]
-        user = User.objects.get(pk=user_id)
-        return user
-    except:
-        return None
+# def getUserFromAccessToken(self, access_token):
+#     try:
+#         access_token = AccessToken(access_token)
+#         user_id = access_token["user_id"]
+#         user = User.objects.get(pk=user_id)
+#         return user
+#     except:
+#         return None
 
 
 class AccountRegisterSerializers(serializers.ModelSerializer):
