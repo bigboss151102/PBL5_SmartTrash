@@ -21,5 +21,7 @@ urlpatterns = [
     path('account_register_add_api/', account_register_add_api),
     path('account_login_api/', account_login_api),
     path('account_reset_password_api/', account_reset_password_api),
+    ###
     path('model/', include('api.model.urls')),
+    path('garbage/', include('api.garbage.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
