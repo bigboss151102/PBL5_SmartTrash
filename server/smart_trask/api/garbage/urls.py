@@ -16,9 +16,14 @@ garbage_delete_api = GarbageMVS.as_view({
     'delete': 'garbage_delete_api'
 })
 
+garbage_get_all_by_user_api = GarbageMVS.as_view({
+    'get': 'garbage_get_all_by_user_api'
+})
+
 
 urlpatterns = [
     path('add_garbage_api/', add_garbage_api),
     path('garbage_edit_api/', garbage_edit_api),
     path('garbage_delete_api/', garbage_delete_api),
+    path('garbage_get_all_by_user_api/', garbage_get_all_by_user_api),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

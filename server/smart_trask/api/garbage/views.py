@@ -3,6 +3,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view, action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import viewsets
+from django.db.models import Q
 import requests
 from django.conf import settings
 import os
@@ -58,3 +59,13 @@ class GarbageMVS(viewsets.ModelViewSet):
         except Exception as error:
             print("GarbageMVS_edit_api: ", error)
         return Response({'error': 'Bad request'}, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(methods=['GET'], detail=False, url_path="garbage_get_all_by_user_api", url_name="garbage_get_all_by_user_api")
+    def garbage_get_all_by_user_api(self, request, *args, **kwargs):
+        user_id = request.user.id
+        if user_id == 0:
+            return Response(data = {}, status=status.HTTP_404_NOT_FOUND)
+        query = Q(user__id = user_id)
+        queryset = Garbage.objects.filter(query).order_by('created_at').distinct()
+        serializer = self.serializer_class(queryset, many=True, context={"request": request})
+        return Response(data = serializer.data, status= status.HTTP_200_OK)
