@@ -75,3 +75,12 @@ class GarbageSerializers(serializers.ModelSerializer):
         except Exception as error:
             print("GarbageSerializers_update_error: ", error)
             return None
+
+
+class PredictInforSerializers(serializers.ModelSerializer):
+
+    
+
+    class Meta:
+        model = PredictInfo
+        field = "__all__"
