@@ -29,4 +29,5 @@ urlpatterns = [
     ###
     path('model/', include('api.model.urls')),
     path('garbage/', include('api.garbage.urls')),
+    path('history/', include('api.predictinfor.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
