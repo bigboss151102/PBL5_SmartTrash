@@ -7,6 +7,7 @@ from django.db.models import Q
 import requests
 from django.conf import settings
 import os
+from django.db.models import Count
 
 from .serializers import *
 
@@ -64,8 +65,42 @@ class GarbageMVS(viewsets.ModelViewSet):
     def garbage_get_all_by_user_api(self, request, *args, **kwargs):
         user_id = request.user.id
         if user_id == 0:
-            return Response(data = {}, status=status.HTTP_404_NOT_FOUND)
-        query = Q(user__id = user_id)
-        queryset = Garbage.objects.filter(query).order_by('created_at').distinct()
-        serializer = self.serializer_class(queryset, many=True, context={"request": request})
-        return Response(data = serializer.data, status= status.HTTP_200_OK)
+            return Response(data={}, status=status.HTTP_404_NOT_FOUND)
+        query = Q(user__id=user_id)
+        queryset = Garbage.objects.filter(
+            query).order_by('created_at').distinct()
+        serializer = self.serializer_class(
+            queryset, many=True, context={"request": request})
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+    @action(methods=['GET'], detail=False, url_path="get_quantity_compartment_by_id_api", url_name="get_quantity_compartment_by_id_api")
+    def get_quantity_compartment_by_id_api(self, request, *args, **kwargs):
+        try:
+            garbage_id = kwargs['id']
+            if garbage_id == 0:
+                return Response(data={}, status=status.HTTP_404_NOT_FOUND)
+            data = {
+                'total_metal': 0,
+                'total_plastic': 0,
+                'total_paper': 0,
+                'total_another': 0
+            }
+            compartments = GarbageCompartment.objects.filter(
+                garbage_id=garbage_id)
+            for compartment in compartments:
+                compartment_id = compartment.id
+                compartment_type = compartment.type_name_compartment
+                num_garbage_count = PredictInfo.objects.filter(
+                    garbage_compartment_id=compartment_id).count()
+                if compartment_type == 'Metal':
+                    data['total_metal'] += num_garbage_count
+                elif compartment_type == 'Plastic':
+                    data['total_plastic'] += num_garbage_count
+                elif compartment_type == 'Paper':
+                    data['total_paper'] += num_garbage_count
+                elif compartment_type == 'Another':
+                    data['total_another'] += num_garbage_count
+            return Response(data=data, status=status.HTTP_200_OK)
+        except Exception as error:
+            print("GarbageMVS_get_quantity_compartment_by_id_api: ", error)
+        return Response({'error': 'Bad request'}, status=status.HTTP_400_BAD_REQUEST)

@@ -20,10 +20,16 @@ garbage_get_all_by_user_api = GarbageMVS.as_view({
     'get': 'garbage_get_all_by_user_api'
 })
 
+get_quantity_compartment_by_id_api = GarbageMVS.as_view({
+    'get': 'get_quantity_compartment_by_id_api'
+})
 
 urlpatterns = [
     path('add_garbage_api/', add_garbage_api),
     path('garbage_edit_api/', garbage_edit_api),
     path('garbage_delete_api/', garbage_delete_api),
     path('garbage_get_all_by_user_api/', garbage_get_all_by_user_api),
+    #
+    path('get_quantity_compartment_by_id_api/<int:id>/',
+         get_quantity_compartment_by_id_api),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

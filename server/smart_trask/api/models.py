@@ -29,7 +29,7 @@ class Garbage(models.Model):
     garbage_code = models.CharField(max_length=50, null=True, blank=True)
     name_country = models.CharField(max_length=50, null=True, blank=True)
     description = RichTextField(blank=True, null=True)
-    # is_full = models.BooleanField(default=False)
+    distance_is_full = models.FloatField(default=0.0)
     created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -45,8 +45,9 @@ class Garbage(models.Model):
 class GarbageCompartment(models.Model):
     garbage = models.ForeignKey(Garbage, related_name='garbage_w_GarbageCompartment',
                                 on_delete=models.SET_NULL, blank=True, null=True)
-    name_compartment = models.CharField(max_length=50, null=True, blank=True)
-    # is_full = models.BooleanField(default=False)
+    type_name_compartment = models.CharField(
+        max_length=50, null=True, blank=True)
+    distance_is_full = models.FloatField(default=0.0)
     created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -54,15 +55,15 @@ class GarbageCompartment(models.Model):
         ordering = ('id',)
 
     def __str__(self):
-        if self.garbage and self.name_compartment:
-            return str(self.id) + "_" + self.garbage.garbage_code + "_" + self.name_compartment
+        if self.garbage and self.type_name_compartment:
+            return str(self.id) + "_" + self.garbage.garbage_code + "_" + self.type_name_compartment
         return str(self.id)
 
 
 class PredictInfo(models.Model):
     garbage_compartment = models.ForeignKey(
         GarbageCompartment, related_name='garbage_compartment_w_predict_info', on_delete=models.SET_NULL, blank=True, null=True)
-    type_garbage = models.CharField(max_length=50, null=True, blank=True)
+    type_name_garbage = models.CharField(max_length=50, null=True, blank=True)
     image_garbage = models.ImageField(
         upload_to='images/', null=True, blank=True)
     predict_precent = models.FloatField(default=0.0)
@@ -73,8 +74,8 @@ class PredictInfo(models.Model):
         ordering = ('id',)
 
     def __str__(self):
-        if self.garbage_compartment and self.type_garbage and self.predict_precent:
-            return str(self.id) + '_' + self.garbage_compartment.name_compartment + '_' + str(self.predict_precent)
+        if self.garbage_compartment and self.type_name_garbage and self.predict_precent:
+            return str(self.id) + '_' + self.garbage_compartment.type_name_compartment + '_' + str(self.predict_precent)
         return self.id
 
 
