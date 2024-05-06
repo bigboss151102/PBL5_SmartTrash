@@ -10,6 +10,7 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework import viewsets
 from api import status_http
 import re
+from .model import *
 
 
 class AccountRegisterMVS(viewsets.ModelViewSet):
@@ -80,4 +81,23 @@ class AccountResetPasswordMVS(viewsets.ModelViewSet):
             return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as error:
             print("ResetPasswordMVS_account_reset_password_api: ", error)
+        return Response({'error': 'Bad request'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class AccountMVS(viewsets.ModelViewSet):
+
+    serializer_class = UserBasicSerializers
+    permission_classes = [IsAuthenticated]
+
+    @action(methods=["GET"], detail=False, url_path="account_get_by_id_api", url_name="account_get_by_id_api")
+    def account_get_by_id_api(self, request, *args, **kwargs):
+        try:
+            user_id = request.user.id
+            if user_id == 0:
+                return Response(data={}, status=status.HTTP_404_NOT_FOUND)
+            queryset = User.objects.get(pk=user_id)
+            serializer = self.serializer_class(queryset, many=False)
+            return Response(data=serializer.data, status=status.HTTP_200_OK)
+        except Exception as error:
+            print("AccountMVS_account_get_by_id_api: ", error)
         return Response({'error': 'Bad request'}, status=status.HTTP_400_BAD_REQUEST)

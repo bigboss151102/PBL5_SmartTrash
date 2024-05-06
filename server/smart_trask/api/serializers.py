@@ -14,6 +14,27 @@ from api.models import *
 #     except:
 #         return None
 
+class ProfileBasicSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = ['phone']
+
+
+class UserBasicSerializers(serializers.ModelSerializer):
+    # profile = ProfileBasicSerializers(required=False)
+    profile = serializers.SerializerMethodField(
+        method_name='get_profile_w_user')
+
+    def get_profile_w_user(self, instance):
+        queryset = instance.user_w_profile
+        if queryset:
+            return ProfileBasicSerializers(queryset).data
+        return None
+
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'profile']
+
 
 class AccountRegisterSerializers(serializers.ModelSerializer):
     phone = serializers.CharField(required=True, allow_blank=False)

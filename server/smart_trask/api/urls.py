@@ -16,11 +16,16 @@ account_reset_password_api = AccountResetPasswordMVS.as_view({
     'post': 'account_reset_password_api'
 })
 
+account_get_by_id_api = AccountMVS.as_view({
+    'get': 'account_get_by_id_api'
+})
+
 
 urlpatterns = [
     path('account_register_add_api/', account_register_add_api),
     path('account_login_api/', account_login_api),
     path('account_reset_password_api/', account_reset_password_api),
+    path('account_get_by_id_api/', account_get_by_id_api),
     ###
     path('model/', include('api.model.urls')),
     path('garbage/', include('api.garbage.urls')),
