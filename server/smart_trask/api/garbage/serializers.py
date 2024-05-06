@@ -77,10 +77,8 @@ class GarbageSerializers(serializers.ModelSerializer):
             return None
 
 
-class PredictInforSerializers(serializers.ModelSerializer):
+# class PredictInforSerializers(serializers.ModelSerializer):
 
-    
-
-    class Meta:
-        model = PredictInfo
-        field = "__all__"
+#     class Meta:
+#         model = PredictInfo
+#         field = "__all__"
