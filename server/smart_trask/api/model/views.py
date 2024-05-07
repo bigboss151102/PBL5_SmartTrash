@@ -161,7 +161,8 @@ class ImageClassifierMVS(viewsets.ModelViewSet):
                     "prediction": prediction
                 }
                 # SERVO_CONTROL_ENDPOINT = "esp_8266"
-                esp8266_url = f"http://192.168.1.31/"
+                SERVO_CONTROL_ENDPOINT = "esp_8266"
+                esp8266_url = f"http://{ESP8266_IP}/{SERVO_CONTROL_ENDPOINT}"
                 response = requests.post(esp8266_url, json=data_to_send)
 
                 if response.status_code == 200:
