@@ -28,6 +28,10 @@ get_quantity_compartment_by_id_api = GarbageMVS.as_view({
 #     'get': 'get_all_predict_infor_by_id_garbage_api'
 # })
 
+get_distance_is_full_compartment_by_id_api = GarbageCompartmentMVS.as_view({
+    'get': "get_distance_is_full_compartment_by_id_api"
+})
+
 urlpatterns = [
     path('add_garbage_api/', add_garbage_api),
     path('garbage_edit_api/', garbage_edit_api),
@@ -36,6 +40,8 @@ urlpatterns = [
     #
     path('get_quantity_compartment_by_id_api/<int:id>/',
          get_quantity_compartment_by_id_api),
+    path('get_distance_is_full_compartment_by_id_api/<int:id>/',
+         get_distance_is_full_compartment_by_id_api),
     # path('get_all_predict_infor_by_id_garbage_api/<int:id>',
     #      get_all_predict_infor_by_id_garbage_api),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

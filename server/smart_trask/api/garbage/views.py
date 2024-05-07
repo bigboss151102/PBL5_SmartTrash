@@ -107,6 +107,26 @@ class GarbageMVS(viewsets.ModelViewSet):
         return Response({'error': 'Bad request'}, status=status.HTTP_400_BAD_REQUEST)
 
 
+class GarbageCompartmentMVS(viewsets.ModelViewSet):
+
+    serializer_class = GarbageBasicCompartment
+    permission_classes = [IsAuthenticated]
+
+    @action(methods=['GET'], detail=False, url_path="get_distance_is_full_compartment_by_id_api", url_name="get_distance_is_full_compartment_by_id_api")
+    def get_distance_is_full_compartment_by_id_api(self, request, *args, **kwargs):
+        try:
+            garbage_id = kwargs['id']
+            if garbage_id == 0:
+                return Response(data={}, status=status.HTTP_404_NOT_FOUND)
+            queryset = GarbageCompartment.objects.filter(garbage_id=garbage_id)
+            serializer = self.serializer_class(queryset, many=True)
+            # print(serializer.data)
+            return Response(data=serializer.data, status=status.HTTP_200_OK)
+        except Exception as error:
+            print("GarbageMVS_get_distance_is_full_compartment_by_id_api: ", error)
+        return Response({'error': 'Bad request'}, status=status.HTTP_400_BAD_REQUEST)
+
+
 # class PredictInforMVS(viewsets.ModelViewSet):
 #     serializer_class = PredictInforSerializers
 #     permission_classes = [IsAuthenticated]
