@@ -23,6 +23,12 @@ from api.models import *
 #         model = User
 #         fields = ['username', 'email', 'profile']
 
+class GarbageBasicCompartment(serializers.ModelSerializer):
+
+    class Meta:
+        model = GarbageCompartment
+        fields = ['type_name_compartment', 'distance_is_full']
+
 
 class GarbageSerializers(serializers.ModelSerializer):
     # user = UserBasicSerializers(required=False)
