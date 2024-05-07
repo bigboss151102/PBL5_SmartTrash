@@ -51,7 +51,7 @@ class PredictInforMVS(viewsets.ModelViewSet):
             if garbage_id == 0:
                 return Response(data={}, status=status.HTTP_404_NOT_FOUND)
             queryset = PredictInfo.objects.filter(
-                garbage_compartment__garbage_id=garbage_id)
+                garbage_compartment__garbage_id=garbage_id).order_by('-created_at')
             # page = self.paginate_queryset(queryset)
             # if page is not None:
             #     serializer = self.get_serializer(page, many=True)
