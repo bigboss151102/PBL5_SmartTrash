@@ -66,7 +66,7 @@ class PredictInfo(models.Model):
     type_name_garbage = models.CharField(max_length=50, null=True, blank=True)
     image_garbage = models.ImageField(
         upload_to='images/', null=True, blank=True)
-    predict_precent = models.FloatField(default=0.0)
+    predict_percent = models.FloatField(default=0.0)
     created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     updated_at = models.DateTimeField(auto_now=True)
 

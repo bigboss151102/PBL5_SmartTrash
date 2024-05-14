@@ -54,6 +54,15 @@ class ImageClassifierMVS(viewsets.ModelViewSet):
             img_array = np.array(img)
             test_img = np.expand_dims(img_array, axis=0)
 
+            current_time = datetime.now()
+            timestamp = current_time.strftime("%d-%m-%Y_%H-%M-%S")
+            image_filename = f"esp32_image_{timestamp}.jpg"
+
+            image_path = os.path.join(
+                settings.MEDIA_ROOT, 'images', image_filename)
+            print("Image pathhhhhhh: ", str(image_path))
+
+            img.save(image_path)
             prediction_prob = model.predict(test_img)
             print(prediction_prob)
 
@@ -68,11 +77,24 @@ class ImageClassifierMVS(viewsets.ModelViewSet):
             }
             prediction = switcher.get(max_index, 'Trash')
 
-            percent_predict = max_value * 100
+            predict_percent = max_value * 100
+            garbage_compartment_id = None
+            if max_index == 0:
+                garbage_compartment_id = 2
+            elif max_index == 1:
+                garbage_compartment_id = 3
+            elif max_index == 2:
+                garbage_compartment_id = 4
+            else:
+                garbage_compartment_id = 5
+
+            PredictInfo.objects.create(
+                type_name_garbage=prediction, image_garbage=image_path, predict_percent=predict_percent, garbage_compartment_id=garbage_compartment_id)
+
             response_data = {
                 "message": "Dự đoán thành công !",
                 "predict_result": prediction,
-                "predict_percent": percent_predict,
+                "predict_percent": predict_percent,
             }
 
             data_to_send = {
@@ -80,13 +102,13 @@ class ImageClassifierMVS(viewsets.ModelViewSet):
                 "max_value": max_value,
                 "prediction": prediction
             }
-            SERVO_CONTROL_ENDPOINT = "esp_8266"
-            esp8266_url = f"http://{ESP8266_IP}/{SERVO_CONTROL_ENDPOINT}"
-            response = requests.post(esp8266_url, json=data_to_send)
+            # SERVO_CONTROL_ENDPOINT = "esp_8266"
+            # esp8266_url = f"http://{ESP8266_IP}/{SERVO_CONTROL_ENDPOINT}"
+            # response = requests.post(esp8266_url, json=data_to_send)
 
-            if response.status_code == 200:
-                return Response(data=data_to_send, status=status.HTTP_200_OK)
-            return Response(data=response_data, status=status.HTTP_400_BAD_REQUEST)
+            # if response.status_code == 200:
+            #     return Response(data=data_to_send, status=status.HTTP_200_OK)
+            return Response(data=response_data, status=status.HTTP_200_OK)
         return Response(
             data={
                 'message': "Không dự đoán được Image .Vui lòng thử lại"
@@ -128,7 +150,9 @@ class ImageClassifierMVS(viewsets.ModelViewSet):
                 timestamp = current_time.strftime("%d-%m-%Y_%H-%M-%S")
                 image_filename = f"esp32_image_{timestamp}.jpg"
 
-                image_path = os.path.join(settings.MEDIA_ROOT, 'images', image_filename)
+                image_path = os.path.join(
+                    settings.MEDIA_ROOT, 'images', image_filename)
+                print("Image pathhhhhhh: ", str(image_path))
                 img.save(image_path)
 
                 prediction_prob = model.predict(test_img)
@@ -137,11 +161,24 @@ class ImageClassifierMVS(viewsets.ModelViewSet):
                 switcher = {0: 'Metal', 1: 'Paper', 2: 'Plastic'}
                 prediction = switcher.get(max_index, 'Trash')
 
-                percent_predict = max_value * 100
+                predict_percent = max_value * 100
+                predict_percent = max_value * 100
+                garbage_compartment_id = None
+                if max_index == 0:
+                    garbage_compartment_id = 2
+                elif max_index == 1:
+                    garbage_compartment_id = 3
+                elif max_index == 2:
+                    garbage_compartment_id = 4
+                else:
+                    garbage_compartment_id = 5
+
+                PredictInfo.objects.create(
+                    type_name_garbage=prediction, image_garbage=image_path, predict_percent=predict_percent, garbage_compartment_id=garbage_compartment_id)
                 response_data = {
                     "message": "Dự đoán thành công!",
                     "predict_result": prediction,
-                    "predict_percent": percent_predict,
+                    "predict_percent": predict_percent,
                 }
 
                 return Response(data=response_data, status=status.HTTP_200_OK)
