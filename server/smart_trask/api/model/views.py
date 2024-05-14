@@ -114,8 +114,7 @@ class ImageClassifierMVS(viewsets.ModelViewSet):
     #         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @action(detail=False, methods=['GET'], url_path="predict_image_from_esp32", url_name='predict_image_from_esp32')
-    def predict_image_from_esp32(self, request,  *args, **kwargs):
-        # serializer_class = PredictSerializer
+    def predict_image_from_esp32(self, request, *args, **kwargs):
         image_url = f"http://{ESP_IP}/cam-hi.jpg"
         try:
             response = requests.get(image_url)
@@ -129,45 +128,25 @@ class ImageClassifierMVS(viewsets.ModelViewSet):
                 timestamp = current_time.strftime("%d-%m-%Y_%H-%M-%S")
                 image_filename = f"esp32_image_{timestamp}.jpg"
 
-                image_path = os.path.join(
-                    settings.MEDIA_ROOT, 'images', image_filename)
+                image_path = os.path.join(settings.MEDIA_ROOT, 'images', image_filename)
                 img.save(image_path)
 
                 prediction_prob = model.predict(test_img)
-                print(prediction_prob)
-
                 max_index = np.argmax(prediction_prob)
-                print("Index of max value: ", max_index)
                 max_value = prediction_prob[0][max_index]
-                print("Max value: ", max_value)
-                switcher = {
-                    0: 'Metal',
-                    1: 'paper',
-                    2: 'plastic',
-                }
+                switcher = {0: 'Metal', 1: 'Paper', 2: 'Plastic'}
                 prediction = switcher.get(max_index, 'Trash')
 
-                # Send data to ESP8266
                 percent_predict = max_value * 100
                 response_data = {
-                    "message": "Dự đoán thành công !",
+                    "message": "Dự đoán thành công!",
                     "predict_result": prediction,
                     "predict_percent": percent_predict,
                 }
 
-                data_to_send = {
-                    "max_index": int(max_index),
-                    "max_value": float(max_value),
-                    "prediction": prediction
-                }
-                # SERVO_CONTROL_ENDPOINT = "esp_8266"
-                SERVO_CONTROL_ENDPOINT = "esp_8266"
-                esp8266_url = f"http://{ESP8266_IP}/{SERVO_CONTROL_ENDPOINT}"
-                response = requests.post(esp8266_url, json=data_to_send)
-
-                if response.status_code == 200:
-                    return Response(data=data_to_send, status=status.HTTP_200_OK)
-                return Response(data=response_data, status=status.HTTP_400_BAD_REQUEST)
+                return Response(data=response_data, status=status.HTTP_200_OK)
+            else:
+                return Response(data={"error": "Failed to fetch image from ESP32"}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
