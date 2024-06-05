@@ -36,6 +36,10 @@ get_average_distance_is_full_compartment_by_all_garbage_api = GarbageCompartment
     'get': 'get_average_distance_is_full_compartment_by_all_garbage_api'
 })
 
+get_all_notify_api = NotifyMVS.as_view({
+    'get': 'get_all_notify_api'
+})
+
 urlpatterns = [
     path('add_garbage_api/', add_garbage_api),
     path('garbage_edit_api/', garbage_edit_api),
@@ -50,4 +54,6 @@ urlpatterns = [
          get_average_distance_is_full_compartment_by_all_garbage_api),
     # path('get_all_predict_infor_by_id_garbage_api/<int:id>',
     #      get_all_predict_infor_by_id_garbage_api),
+    #
+    path('get_all_notify_api/', get_all_notify_api),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

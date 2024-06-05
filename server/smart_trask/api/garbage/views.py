@@ -16,7 +16,7 @@ from .serializers import *
 
 class GarbageMVS(viewsets.ModelViewSet):
     serializer_class = GarbageSerializers
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
     @action(methods=['POST'], detail=False, url_path="add_garbage_api", url_name="add_garbage_api")
     def add_garbage_api(self, request):
@@ -131,45 +131,6 @@ class GarbageCompartmentMVS(viewsets.ModelViewSet):
     @action(methods=['GET'], detail=False, url_path="get_average_distance_is_full_compartment_by_all_garbage_api", url_name="get_average_distance_is_full_compartment_by_all_garbage_api")
     def get_average_distance_is_full_compartment_by_all_garbage_api(self, request, *args, **kwargs):
         try:
-            #     # Subquery để lấy các giá trị duy nhất của name_country từ Garbage
-            #     data = {
-            #         "name_country": None,
-            #         "value_average": {
-            #             "Metal": 0,
-            #             "Plastic": 0,
-            #             "Paper": 0,
-            #             "Another": 0
-            #         }
-            #     }
-            #     subquery = Garbage.objects.filter(id=OuterRef(
-            #         'garbage_id')).values('name_country')[:1]
-            #     # print("Các giá trị name_country: ", subquery)
-            #     # Câu truy vấn chính để tính giá trị trung bình của distance_is_full cho mỗi loại ngăn (Metal, Plastic, Paper)
-            #     average_distances = GarbageCompartment.objects.filter(
-            #         garbage__name_country=Subquery(subquery)
-            #     ).values('garbage__name_country', 'type_name_compartment').annotate(avg_distance=Avg('distance_is_full'))
-
-            #     # Tạo một dictionary để lưu trữ giá trị trung bình của distance_is_full cho mỗi loại ngăn của mỗi khu vực
-            #     average_distance_dict = {}
-
-            #     # Lặp qua kết quả của truy vấn và gán giá trị trung bình vào từng loại ngăn của mỗi khu vực
-            #     for compartment in average_distances:
-            #         name_country = compartment['garbage__name_country']
-            #         compartment_type = compartment['type_name_compartment']
-            #         avg_distance = compartment['avg_distance']
-
-            #         if name_country not in average_distance_dict:
-            #             average_distance_dict[name_country] = {}
-
-            #         average_distance_dict[name_country][compartment_type] = avg_distance
-
-            #     # In ra kết quả
-            #     for name_country, compartment_data in average_distance_dict.items():
-            #         print(f"Name Country: {name_country}")
-            #         for compartment, avg_distance in compartment_data.items():
-            #             print(
-            #                 f"- Average distance_is_full for {compartment}: {avg_distance}")
-
            # Khởi tạo danh sách để lưu trữ thông tin của mỗi name_country
             data_list = []
 
@@ -215,6 +176,33 @@ class GarbageCompartmentMVS(viewsets.ModelViewSet):
                 "GarbageCompartmentMVS_get_distance_is_full_compartment_by_id_api: ", error)
         return Response({'error': 'Bad request'}, status=status.HTTP_400_BAD_REQUEST)
 
+
+class NotifyMVS(viewsets.ModelViewSet):
+
+    @action(methods=['GET'], detail=False, url_path="get_all_notify_api", url_name="get_all_notify_api")
+    def get_all_notify_api(self, request, *args, **kwargs):
+        try:
+            data = {}
+            garbage_compartments = GarbageCompartment.objects.all()
+            if garbage_compartments.exists():
+                for compartent in garbage_compartments:
+                    count = PredictInfo.objects.filter(
+                        garbage_compartment=compartent).count()
+                    if count > 5:
+                        message = f"Ngăn {compartent.type_name_compartment} đã đầy"
+                        notify = Notify.objects.create(
+                            message=message, garbage=compartent.garbage)
+
+            notifications = Notify.objects.all()
+            if notifications.exists():
+                for notify in notifications:
+                    data['message'] = notify.message
+                    data['garbage_code'] = notify.garbage.garbage_code if notify.garbage else "Unknown",
+                    data['created_at'] = notify.garbage.created_at
+            return Response(data=data, status=status.HTTP_200_OK)
+        except Exception as error:
+            print("NotifyMVS_get_all_notify: ", error)
+        return Response({'error': 'Bad request'}, status=status.HTTP_400_BAD_REQUEST)
 
 # class PredictInforMVS(viewsets.ModelViewSet):
 #     serializer_class = PredictInforSerializers
