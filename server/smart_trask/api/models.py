@@ -79,11 +79,24 @@ class PredictInfo(models.Model):
         return str(self.id)
 
 
-# class SessionToken(models.Model):
-#     user = models.OneToOneField(
-#         User, on_delete=models.CASCADE, primary_key=True)
-#     token = models.CharField(max_length=500, null=True, blank=False)
-#     hostname = models.CharField(max_length=100, null=True, blank=True)
-#     ip_address = models.CharField(max_length=100, null=True, blank=True)
-#     mac_address = models.CharField(max_length=100, null=True, blank=True)
-#     created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
+class Notify(models.Model):
+    message = models.CharField(max_length=500, null=True, blank=True)
+    garbage = models.ForeignKey(Garbage, related_name='garbage_w_Notify',
+                                on_delete=models.SET_NULL, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
+
+    class Meta:
+        ordering = ('id',)
+
+    def __str__(self):
+        if self.garbage:
+            return str(self.id) + "_" + self.garbage.garbage_code
+        return str(self.id)
+    # class SessionToken(models.Model):
+    #     user = models.OneToOneField(
+    #         User, on_delete=models.CASCADE, primary_key=True)
+    #     token = models.CharField(max_length=500, null=True, blank=False)
+    #     hostname = models.CharField(max_length=100, null=True, blank=True)
+    #     ip_address = models.CharField(max_length=100, null=True, blank=True)
+    #     mac_address = models.CharField(max_length=100, null=True, blank=True)
+    #     created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
