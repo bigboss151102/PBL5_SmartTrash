@@ -128,33 +128,45 @@ class GarbageCompartmentMVS(viewsets.ModelViewSet):
                 "GarbageCompartmentMVS_get_distance_is_full_compartment_by_id_api: ", error)
         return Response({'error': 'Bad request'}, status=status.HTTP_400_BAD_REQUEST)
 
-    @action(methods=['GET'], detail=False, url_path="get_average_distance_is_full_compartment_by_all_garbage_api", url_name="get_average_distance_is_full_compartment_by_all_garbage_api")
-    def get_average_distance_is_full_compartment_by_all_garbage_api(self, request, *args, **kwargs):
+    @action(methods=['GET'], detail=False, url_path="get_average_garbage_quantity_by_compartment_api", url_name="get_average_garbage_quantity_by_compartment_api")
+    def get_average_garbage_quantity_by_compartment_api(self, request, *args, **kwargs):
         try:
-           # Khởi tạo danh sách để lưu trữ thông tin của mỗi name_country
+            # Khởi tạo danh sách để lưu trữ thông tin của mỗi name_country
             data_list = []
 
             # Subquery để lấy các giá trị duy nhất của name_country từ Garbage
-            subquery = Garbage.objects.filter(id=OuterRef(
-                'garbage_id')).values('name_country')
+            subquery = Garbage.objects.filter(
+                id=OuterRef('garbage_id')).values('name_country')
 
-            # Câu truy vấn chính để tính giá trị trung bình của distance_is_full cho mỗi loại ngăn (Metal, Plastic, Paper)
-            average_distances = GarbageCompartment.objects.filter(
-                garbage__name_country__in=subquery
-            ).values('garbage__name_country', 'type_name_compartment').annotate(avg_distance=Avg('distance_is_full'))
+            # Tính số lượng bản ghi trong PredictInfo cho mỗi GarbageCompartment
+            compartment_counts = PredictInfo.objects.values(
+                'garbage_compartment').annotate(count=Count('id'))
+
+            # Lấy tất cả các bản ghi của GarbageCompartment cùng với số lượng đếm từ PredictInfo
+            garbage_compartments = GarbageCompartment.objects.all().annotate(
+                garbage_count=Subquery(
+                    compartment_counts.filter(
+                        garbage_compartment=OuterRef('id')).values('count')
+                )
+            )
+
+            # Câu truy vấn chính để tính giá trị trung bình của số lượng rác cho mỗi loại ngăn (Metal, Plastic, Paper)
+            average_quantities = garbage_compartments.values('garbage__name_country', 'type_name_compartment').annotate(
+                avg_quantity=Avg('garbage_count')
+            )
 
             # Lặp qua kết quả của truy vấn và gán giá trị trung bình vào danh sách data_list
-            for compartment in average_distances:
+            for compartment in average_quantities:
                 name_country = compartment['garbage__name_country']
                 compartment_type = compartment['type_name_compartment']
-                avg_distance = compartment['avg_distance']
+                avg_quantity = compartment['avg_quantity']
 
                 # Tìm hoặc tạo mới một entry cho name_country trong data_list
                 found = False
                 for data in data_list:
                     if data["name_country"] == name_country:
                         found = True
-                        data["value_average"][compartment_type] = avg_distance
+                        data["value_average"][compartment_type] = avg_quantity
                         break
 
                 # Nếu name_country chưa tồn tại trong data_list, tạo mới một entry cho nó
@@ -168,13 +180,12 @@ class GarbageCompartmentMVS(viewsets.ModelViewSet):
                             "Another": 0
                         }
                     })
-                    data_list[-1]["value_average"][compartment_type] = avg_distance
-            # print(data_list)
+                    data_list[-1]["value_average"][compartment_type] = avg_quantity
+
             return Response(data=data_list, status=status.HTTP_200_OK)
         except Exception as error:
-            print(
-                "GarbageCompartmentMVS_get_distance_is_full_compartment_by_id_api: ", error)
-        return Response({'error': 'Bad request'}, status=status.HTTP_400_BAD_REQUEST)
+            print("Error:", error)
+            return Response({'error': 'Bad request'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class NotifyMVS(viewsets.ModelViewSet):

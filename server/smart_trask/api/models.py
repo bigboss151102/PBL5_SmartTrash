@@ -74,8 +74,8 @@ class PredictInfo(models.Model):
         ordering = ('id',)
 
     def __str__(self):
-        if self.garbage_compartment and self.type_name_garbage and self.predict_precent:
-            return str(self.id) + '_' + self.garbage_compartment.type_name_compartment + '_' + str(self.predict_precent)
+        if self.garbage_compartment and self.type_name_garbage and self.predict_percent:
+            return str(self.id) + '_' + self.garbage_compartment.type_name_compartment + '_' + str(self.predict_percent)
         return str(self.id)
 
 

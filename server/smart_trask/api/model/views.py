@@ -167,9 +167,9 @@ class ImageClassifierMVS(viewsets.ModelViewSet):
                 if max_index == 0:
                     garbage_compartment_id = 2
                 elif max_index == 1:
-                    garbage_compartment_id = 3
-                elif max_index == 2:
                     garbage_compartment_id = 4
+                elif max_index == 2:
+                    garbage_compartment_id = 3
                 else:
                     garbage_compartment_id = 5
 
