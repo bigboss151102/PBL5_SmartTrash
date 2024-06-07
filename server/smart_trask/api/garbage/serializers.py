@@ -22,6 +22,11 @@ from api.models import *
 #     class Meta:
 #         model = User
 #         fields = ['username', 'email', 'profile']
+class NotifyBasicSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = Notify
+        fields = "__all__"
+
 
 class GarbageBasicCompartment(serializers.ModelSerializer):
 
