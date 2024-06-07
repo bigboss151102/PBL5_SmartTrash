@@ -17,7 +17,7 @@ from .serializers import *
 
 class GarbageMVS(viewsets.ModelViewSet):
     serializer_class = GarbageSerializers
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     @action(methods=['POST'], detail=False, url_path="add_garbage_api", url_name="add_garbage_api")
     def add_garbage_api(self, request):
@@ -86,23 +86,23 @@ class GarbageMVS(viewsets.ModelViewSet):
                 'total_metal': 0,
                 'total_plastic': 0,
                 'total_paper': 0,
-                'total_another': 0
+                'total_cardboard': 0
             }
             compartments = GarbageCompartment.objects.filter(
                 garbage_id=garbage_id)
             for compartment in compartments:
                 compartment_id = compartment.id
-                compartment_type = compartment.type_name_compartment
+                compartment_type = compartment.type_name_compartment.lower()
                 num_garbage_count = PredictInfo.objects.filter(
                     garbage_compartment_id=compartment_id).count()
-                if compartment_type == 'Metal':
+                if compartment_type == 'metal':
                     data['total_metal'] += num_garbage_count
-                elif compartment_type == 'Plastic':
+                elif compartment_type == 'plastic':
                     data['total_plastic'] += num_garbage_count
-                elif compartment_type == 'Paper':
+                elif compartment_type == 'paper':
                     data['total_paper'] += num_garbage_count
-                elif compartment_type == 'Another':
-                    data['total_another'] += num_garbage_count
+                elif compartment_type == 'cardboard':
+                    data['total_cardboard'] += num_garbage_count
             return Response(data=data, status=status.HTTP_200_OK)
         except Exception as error:
             print("GarbageMVS_get_quantity_compartment_by_id_api: ", error)
@@ -175,10 +175,10 @@ class GarbageCompartmentMVS(viewsets.ModelViewSet):
                     data_list.append({
                         "name_country": name_country,
                         "value_average": {
-                            "Metal": 0,
-                            "Plastic": 0,
-                            "Paper": 0,
-                            "Another": 0
+                            "metal": 0,
+                            "plastic": 0,
+                            "paper": 0,
+                            "cardboard": 0
                         }
                     })
                     data_list[-1]["value_average"][compartment_type] = avg_quantity
@@ -205,7 +205,7 @@ class NotifyMVS(viewsets.ModelViewSet):
                 for compartment in garbage_compartments:
                     count = PredictInfo.objects.filter(
                         garbage_compartment=compartment).count()
-                    if count > 5:
+                    if count > 2:
                         message = f"Ngăn {compartment.type_name_compartment} đã đầy"
                         # Ví dụ: Sẽ hiện thông báo mới nếu sau 1h chưa đổ rác
                         time_threshold = timezone.now() - timezone.timedelta(hours=1)
