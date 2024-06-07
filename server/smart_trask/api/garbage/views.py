@@ -9,6 +9,7 @@ from django.conf import settings
 import os
 from django.db.models import Count
 from django.db.models import Avg, F, Subquery, OuterRef
+from django.utils import timezone
 
 from .serializers import *
 # from api.pagination import *
@@ -190,27 +191,40 @@ class GarbageCompartmentMVS(viewsets.ModelViewSet):
 
 class NotifyMVS(viewsets.ModelViewSet):
 
-    @action(methods=['GET'], detail=False, url_path="get_all_notify_api", url_name="get_all_notify_api")
-    def get_all_notify_api(self, request, *args, **kwargs):
+    serializer_class = NotifyBasicSerializers
+    permission_classes = [IsAuthenticated]
+
+    @action(methods=['GET'], detail=False, url_path="get_all_notify_api_by_user", url_name="get_all_notify_api_by_user")
+    def get_all_notify_api_by_user(self, request, *args, **kwargs):
         try:
-            data = {}
+            user_id = request.user.id
+            if user_id == 0:
+                return Response(data={}, status=status.HTTP_404_NOT_FOUND)
             garbage_compartments = GarbageCompartment.objects.all()
             if garbage_compartments.exists():
-                for compartent in garbage_compartments:
+                for compartment in garbage_compartments:
                     count = PredictInfo.objects.filter(
-                        garbage_compartment=compartent).count()
+                        garbage_compartment=compartment).count()
                     if count > 5:
-                        message = f"Ngăn {compartent.type_name_compartment} đã đầy"
-                        notify = Notify.objects.create(
-                            message=message, garbage=compartent.garbage)
+                        message = f"Ngăn {compartment.type_name_compartment} đã đầy"
+                        # Ví dụ: Sẽ hiện thông báo mới nếu sau 1h chưa đổ rác
+                        time_threshold = timezone.now() - timezone.timedelta(hours=1)
+                        recent_notify_exists = Notify.objects.filter(
+                            message=message,
+                            garbage=compartment.garbage,
+                            created_at__gt=time_threshold
+                        ).exists()
 
-            notifications = Notify.objects.all()
-            if notifications.exists():
-                for notify in notifications:
-                    data['message'] = notify.message
-                    data['garbage_code'] = notify.garbage.garbage_code if notify.garbage else "Unknown",
-                    data['created_at'] = notify.garbage.created_at
-            return Response(data=data, status=status.HTTP_200_OK)
+                        if not recent_notify_exists:
+                            Notify.objects.create(
+                                message=message, garbage=compartment.garbage)
+            query = Q(user__id=user_id)
+            garbage_by_user = Garbage.objects.filter(query)
+            queryset = Notify.objects.filter(
+                garbage__in=garbage_by_user).distinct()
+            serializer = self.serializer_class(
+                queryset, many=True, context={"request": request})
+            return Response(data=serializer.data, status=status.HTTP_200_OK)
         except Exception as error:
             print("NotifyMVS_get_all_notify: ", error)
         return Response({'error': 'Bad request'}, status=status.HTTP_400_BAD_REQUEST)
