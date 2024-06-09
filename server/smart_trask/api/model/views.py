@@ -67,12 +67,14 @@ class ImageClassifierMVS(viewsets.ModelViewSet):
 
             img.save(image_path)
             prediction_prob = model.predict(test_img)
-            print(prediction_prob)
+            print("Giá trị của mảng xác suất: ", prediction_prob)
 
             max_index = int(np.argmax(prediction_prob))
             print("Index of max value: ", max_index)
+
             max_value = prediction_prob[0][max_index].astype(float)
             print("Max value: ", max_value)
+
             switcher = {
                 0: 'cardboard', 1: 'metal',
                 2: 'nothing', 3: 'paper', 4: 'plastic'

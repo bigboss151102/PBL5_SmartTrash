@@ -1,3 +1,4 @@
+from dataclasses import fields
 from rest_framework import serializers
 from api.models import *
 
@@ -33,6 +34,12 @@ class GarbageBasicCompartment(serializers.ModelSerializer):
     class Meta:
         model = GarbageCompartment
         fields = ['type_name_compartment', 'distance_is_full']
+
+
+class GarbageBasicOneCompartment(serializers.ModelSerializer):
+    class Meta:
+        model = GarbageCompartment
+        fields = ['id', 'type_name_compartment']
 
 
 class GarbageSerializers(serializers.ModelSerializer):
