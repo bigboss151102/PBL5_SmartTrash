@@ -112,6 +112,7 @@ class GarbageMVS(viewsets.ModelViewSet):
 class GarbageCompartmentMVS(viewsets.ModelViewSet):
 
     serializer_class = GarbageBasicCompartment
+    serializer_class_1 = GarbageBasicOneCompartment
     permission_classes = [IsAuthenticated]
 
     @action(methods=['GET'], detail=False, url_path="get_distance_is_full_compartment_by_id_api", url_name="get_distance_is_full_compartment_by_id_api")
@@ -188,6 +189,19 @@ class GarbageCompartmentMVS(viewsets.ModelViewSet):
             print("Error:", error)
             return Response({'error': 'Bad request'}, status=status.HTTP_400_BAD_REQUEST)
 
+    @action(methods=['GET'], detail=False, url_path="get_id_compartment_by_id_garbage_api", url_name="get_id_compartment_by_id_garbage_api")
+    def get_id_compartment_by_id_garbage_api(self, request, *args, **kwargs):
+        try:
+            garbage_id = kwargs['id']
+            if garbage_id == 0:
+                return Response(data={}, status=status.HTTP_404_NOT_FOUND)
+            queryset = GarbageCompartment.objects.filter(garbage_id=garbage_id)
+            serializer = self.serializer_class_1(queryset, many=True)
+            return Response(data=serializer.data, status=status.HTTP_200_OK)
+        except Exception as error:
+            print("GarbageMVS_get_id_compartment_by_id_garbage_api: ", error)
+            return Response({'error': 'Bad request'}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class NotifyMVS(viewsets.ModelViewSet):
 
@@ -205,7 +219,20 @@ class NotifyMVS(viewsets.ModelViewSet):
                 for compartment in garbage_compartments:
                     count = PredictInfo.objects.filter(
                         garbage_compartment=compartment).count()
-                    if count > 2:
+                    if count == 0:
+                        message = f"Ngăn {compartment.type_name_compartment} đang trống"
+                        # Ví dụ: Sẽ hiện thông báo mới nếu vẫn đang trống
+                        time_threshold = timezone.now() - timezone.timedelta(hours=1)
+                        recent_notify_exists = Notify.objects.filter(
+                            message=message,
+                            garbage=compartment.garbage,
+                            created_at__gt=time_threshold
+                        ).exists()
+
+                        if not recent_notify_exists:
+                            Notify.objects.create(
+                                message=message, garbage=compartment.garbage)
+                    if count > 6:
                         message = f"Ngăn {compartment.type_name_compartment} đã đầy"
                         # Ví dụ: Sẽ hiện thông báo mới nếu sau 1h chưa đổ rác
                         time_threshold = timezone.now() - timezone.timedelta(hours=1)
@@ -221,7 +248,7 @@ class NotifyMVS(viewsets.ModelViewSet):
             query = Q(user__id=user_id)
             garbage_by_user = Garbage.objects.filter(query)
             queryset = Notify.objects.filter(
-                garbage__in=garbage_by_user).distinct()
+                garbage__in=garbage_by_user).order_by('-created_at').distinct()
             serializer = self.serializer_class(
                 queryset, many=True, context={"request": request})
             return Response(data=serializer.data, status=status.HTTP_200_OK)

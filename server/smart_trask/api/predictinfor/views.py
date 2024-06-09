@@ -61,3 +61,22 @@ class PredictInforMVS(viewsets.ModelViewSet):
         except Exception as error:
             print("PredictInforMVS_get_all_predict_infor_by_id_garbage_api: ", error)
         return Response({'error': 'Bad request'}, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(methods=['GET'], detail=False, url_path="delete_all_predict_infor_by_id_compartment_api", url_name="delete_all_predict_infor_by_id_compartment_api")
+    def delete_all_predict_infor_by_id_compartment_api(self, request, *args, **kwargs):
+        try:
+            # compartment_id = kwargs['id']
+            # if compartment_id == 0:
+            #     return Response(data={}, status=status.HTTP_404_NOT_FOUND)
+            serializer = self.serializer_class(data=request.data)
+            if serializer.is_valid():
+                data = {}
+                result = serializer.delete_predict(request)
+                if result:
+                    data['message'] = 'Delete Predict successfully!'
+                    return Response(data=data, status=status.HTTP_204_NO_CONTENT)
+            return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as error:
+            print(
+                "PredictInforMVS_delete_all_predict_infor_by_id_compartment_api: ", error)
+        return Response({'error': 'Bad request'}, status=status.HTTP_400_BAD_REQUEST)

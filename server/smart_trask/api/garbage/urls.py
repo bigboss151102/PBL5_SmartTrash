@@ -40,6 +40,10 @@ get_all_notify_api_by_user = NotifyMVS.as_view({
     'get': 'get_all_notify_api_by_user'
 })
 
+get_id_compartment_by_id_garbage_api = GarbageCompartmentMVS.as_view({
+    'get': 'get_id_compartment_by_id_garbage_api'
+})
+
 urlpatterns = [
     path('add_garbage_api/', add_garbage_api),
     path('garbage_edit_api/', garbage_edit_api),
@@ -56,4 +60,7 @@ urlpatterns = [
     #      get_all_predict_infor_by_id_garbage_api),
     #
     path('get_all_notify_api_by_user/', get_all_notify_api_by_user),
+    path('get_id_compartment_by_id_garbage_api/<int:id>/',
+         get_id_compartment_by_id_garbage_api),
+
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
