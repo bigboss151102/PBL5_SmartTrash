@@ -50,7 +50,7 @@ class ImageClassifierMVS(viewsets.ModelViewSet):
         if serializer.is_valid():
             image = serializer.validated_data['image']
             img = Image.open(image)
-            img = img.resize((350, 350))
+            img = img.resize((384, 384))
             img_array = np.array(img)
             test_img = np.expand_dims(img_array, axis=0)
 
@@ -74,27 +74,26 @@ class ImageClassifierMVS(viewsets.ModelViewSet):
             max_value = prediction_prob[0][max_index].astype(float)
             print("Max value: ", max_value)
             switcher = {
-                0: 'cardboard', 1: 'metal',
-                2: 'nothing', 3: 'paper', 4: 'plastic'
+                0: 'Cardboard', 1: 'Metal',
+                2: 'Nothing', 3: 'Paper', 4: 'Plastic'
             }
             prediction = switcher.get(max_index)
 
             predict_percent = max_value * 100
             garbage_compartment_id = None
             if max_index == 0:
-                garbage_compartment_id = 11
+                garbage_compartment_id = 7
             elif max_index == 1:
-                garbage_compartment_id = 2
+                garbage_compartment_id = 5
             elif max_index == 3:
                 garbage_compartment_id = 4
             elif max_index == 4:
-                garbage_compartment_id = 3
+                garbage_compartment_id = 6
 
             print(garbage_compartment_id)
-            if garbage_compartment_id == 11 or garbage_compartment_id == 2 or garbage_compartment_id == 4 or garbage_compartment_id == 3:
+            if garbage_compartment_id == 7 or garbage_compartment_id == 5 or garbage_compartment_id == 4 or garbage_compartment_id == 6:
                 PredictInfo.objects.create(
                     type_name_garbage=prediction, image_garbage=image_path, predict_percent=predict_percent, garbage_compartment_id=garbage_compartment_id)
-
             response_data = {
                 "message": "Dự đoán thành công !",
                 "predict_result": prediction,
@@ -115,7 +114,7 @@ class ImageClassifierMVS(viewsets.ModelViewSet):
             response = requests.get(image_url)
             if response.status_code == 200:
                 image = Image.open(BytesIO(response.content))
-                img = image.resize((350, 350))
+                img = image.resize((384, 384))
                 img_array = np.array(img)
                 test_img = np.expand_dims(img_array, axis=0)
 
@@ -125,29 +124,28 @@ class ImageClassifierMVS(viewsets.ModelViewSet):
 
                 image_path = os.path.join(
                     settings.MEDIA_ROOT, 'images', image_filename)
-                print("Image pathhhhhhh: ", str(image_path))
                 img.save(image_path)
 
                 prediction_prob = model.predict(test_img)
                 max_index = np.argmax(prediction_prob)
                 max_value = prediction_prob[0][max_index]
-                switcher = {0: 'cardboard', 1: 'metal',
-                            2: 'nothing', 3: 'paper', 4: 'plastic'}
+                switcher = {0: 'Cardboard', 1: 'Metal',
+                            2: 'Nothing', 3: 'Paper', 4: 'Plastic'}
                 prediction = switcher.get(max_index)
 
                 predict_percent = max_value * 100
                 predict_percent = max_value * 100
                 garbage_compartment_id = None
                 if max_index == 0:
-                    garbage_compartment_id = 11
+                    garbage_compartment_id = 7
                 elif max_index == 1:
-                    garbage_compartment_id = 2
+                    garbage_compartment_id = 5
                 elif max_index == 3:
                     garbage_compartment_id = 4
                 elif max_index == 4:
-                    garbage_compartment_id = 3
+                    garbage_compartment_id = 6
 
-                if garbage_compartment_id == 11 or garbage_compartment_id == 2 or garbage_compartment_id == 4 or garbage_compartment_id == 3:
+                if garbage_compartment_id == 7 or garbage_compartment_id == 5 or garbage_compartment_id == 4 or garbage_compartment_id == 6:
                     PredictInfo.objects.create(
                         type_name_garbage=prediction, image_garbage=image_path, predict_percent=predict_percent, garbage_compartment_id=garbage_compartment_id)
                 response_data = {

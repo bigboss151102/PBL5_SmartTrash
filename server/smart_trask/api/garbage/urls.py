@@ -39,7 +39,9 @@ get_average_garbage_quantity_by_compartment_api = GarbageCompartmentMVS.as_view(
 get_all_notify_api_by_user = NotifyMVS.as_view({
     'get': 'get_all_notify_api_by_user'
 })
-
+get_distance_from_ultrasonic_sensor = SensorUltraMVS.as_view({
+    'get': 'get_distance_from_ultrasonic_sensor'
+})
 urlpatterns = [
     path('add_garbage_api/', add_garbage_api),
     path('garbage_edit_api/', garbage_edit_api),
@@ -55,5 +57,7 @@ urlpatterns = [
     # path('get_all_predict_infor_by_id_garbage_api/<int:id>',
     #      get_all_predict_infor_by_id_garbage_api),
     #
+    path('get_distance_from_ultrasonic_sensor/',
+         get_distance_from_ultrasonic_sensor),
     path('get_all_notify_api_by_user/', get_all_notify_api_by_user),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

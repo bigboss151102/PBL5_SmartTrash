@@ -14,6 +14,7 @@ from django.utils import timezone
 from .serializers import *
 # from api.pagination import *
 
+ESP8266_IP = settings.ESP8266_IP
 
 class GarbageMVS(viewsets.ModelViewSet):
     serializer_class = GarbageSerializers
@@ -246,3 +247,30 @@ class NotifyMVS(viewsets.ModelViewSet):
 #         except Exception as error:
 #             print("PredictInforMVS_get_all_predict_infor_by_id_garbage_api: ", error)
 #         return Response({'error': 'Bad request'}, status=status.HTTP_400_BAD_REQUEST)
+class SensorUltraMVS(viewsets.ModelViewSet):
+
+    permission_classes = [IsAuthenticated]
+
+    @action(methods=['GET'], detail=False, url_path="get_distance_from_ultrasonic_sensor", url_name="get_distance_from_ultrasonic_sensor")
+    def get_distance_from_ultrasonic_sensor(self, request, *args, **kwargs):
+        try:
+            # path = "sensors"
+            # esp8266_url = f"http://{ESP8266_IP}/{path}"
+            # response = requests.get(esp8266_url)
+            # data = response.json()
+            data = {
+                "Metal": 0.5,
+                "Paper": 0.2,
+                "Plastic": 0.1,
+                "Cardboard": 0.4
+            }
+            for type_name, distance_value in data.items():
+                compartments = GarbageCompartment.objects.filter(
+                    type_name_compartment=type_name)
+                for compartment in compartments:
+                    compartment.distance_is_full = distance_value
+                    compartment.save()
+            return Response(data=data, status=status.HTTP_200_OK)
+        except Exception as error:
+            print("SensorUltraMVS_get_distance_from_ultrasonic_sensor: ", error)
+        return Response(data="Don't get infor from ultrasonic sensor !", status=status.HTTP_400_BAD_REQUEST)
