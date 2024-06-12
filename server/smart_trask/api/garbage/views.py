@@ -136,18 +136,14 @@ class GarbageCompartmentMVS(viewsets.ModelViewSet):
     @action(methods=['GET'], detail=False, url_path="get_average_garbage_quantity_by_compartment_api", url_name="get_average_garbage_quantity_by_compartment_api")
     def get_average_garbage_quantity_by_compartment_api(self, request, *args, **kwargs):
         try:
-            # Khởi tạo danh sách để lưu trữ thông tin của mỗi name_country
             data_list = []
 
-            # Subquery để lấy các giá trị duy nhất của name_country từ Garbage
             subquery = Garbage.objects.filter(
                 id=OuterRef('garbage_id')).values('name_country')
 
-            # Tính số lượng bản ghi trong PredictInfo cho mỗi GarbageCompartment
             compartment_counts = PredictInfo.objects.values(
                 'garbage_compartment').annotate(count=Count('id'))
 
-            # Lấy tất cả các bản ghi của GarbageCompartment cùng với số lượng đếm từ PredictInfo
             garbage_compartments = GarbageCompartment.objects.all().annotate(
                 garbage_count=Subquery(
                     compartment_counts.filter(
@@ -155,18 +151,15 @@ class GarbageCompartmentMVS(viewsets.ModelViewSet):
                 )
             )
 
-            # Câu truy vấn chính để tính giá trị trung bình của số lượng rác cho mỗi loại ngăn (Metal, Plastic, Paper)
             average_quantities = garbage_compartments.values('garbage__name_country', 'type_name_compartment').annotate(
                 avg_quantity=Avg('garbage_count')
             )
 
-            # Lặp qua kết quả của truy vấn và gán giá trị trung bình vào danh sách data_list
             for compartment in average_quantities:
                 name_country = compartment['garbage__name_country']
                 compartment_type = compartment['type_name_compartment']
                 avg_quantity = compartment['avg_quantity']
 
-                # Tìm hoặc tạo mới một entry cho name_country trong data_list
                 found = False
                 for data in data_list:
                     if data["name_country"] == name_country:
@@ -174,7 +167,6 @@ class GarbageCompartmentMVS(viewsets.ModelViewSet):
                         data["value_average"][compartment_type] = avg_quantity
                         break
 
-                # Nếu name_country chưa tồn tại trong data_list, tạo mới một entry cho nó
                 if not found:
                     data_list.append({
                         "name_country": name_country,
@@ -233,10 +225,10 @@ class GarbageCompartmentMVS(viewsets.ModelViewSet):
                     data_list.append({
                         "name_country": name_country,
                         "value_average": {
-                            "Metal": 0,
-                            "Plastic": 0,
-                            "Paper": 0,
-                            "Cardboard": 0
+                            "metal": 0,
+                            "plastic": 0,
+                            "paper": 0,
+                            "cardboard": 0
                         }
                     })
                     data_list[-1]["value_average"][compartment_type] = avg_distance
@@ -258,37 +250,39 @@ class NotifyMVS(viewsets.ModelViewSet):
             user_id = request.user.id
             if user_id == 0:
                 return Response(data={}, status=status.HTTP_404_NOT_FOUND)
-            garbage_compartments = GarbageCompartment.objects.all()
-            if garbage_compartments.exists():
-                for compartment in garbage_compartments:
-                    count = PredictInfo.objects.filter(
-                        garbage_compartment=compartment).count()
-                    if count == 0:
-                        message = f"Ngăn {compartment.type_name_compartment} đang trống"
-                        # Ví dụ: Sẽ hiện thông báo mới nếu vẫn đang trống
-                        time_threshold = timezone.now() - timezone.timedelta(hours=1)
-                        recent_notify_exists = Notify.objects.filter(
-                            message=message,
-                            garbage=compartment.garbage,
-                            created_at__gt=time_threshold
-                        ).exists()
+            # path = "sensors"
+            # esp8266_url = f"http://{ESP8266_IP}/{path}"
+            # response = requests.get(esp8266_url)
+            # data = response.json()
+            data = {
+                "metal": 25,
+                "paper": 24,
+                "plastic": 0,
+                "cardboard": 1
+            }
+            for type_name, distance_value in data.items():
+                compartments = GarbageCompartment.objects.filter(
+                    type_name_compartment=type_name)
+                for compartment in compartments:
+                    compartment.distance_is_full = round(
+                        1 - (distance_value / 28), 2)
+                    compartment.save()
+            all_compartments = GarbageCompartment.objects.all()
+            for compartment in all_compartments:
+                check_distance = compartment.distance_is_full
+                message = None
+                if check_distance == 1:
+                    message = f"Ngăn {compartment.type_name_compartment} đã đầy !"
+                elif check_distance == 0:
+                    message = f"Ngăn {compartment.type_name_compartment} trống !"
+                elif check_distance < 0.5:
+                    message = f"Ngăn {compartment.type_name_compartment} sắp đầy !"
+                else:
+                    message = f"Ngăn {compartment.type_name_compartment} bình thường !"
 
-                        if not recent_notify_exists:
-                            Notify.objects.create(
-                                message=message, garbage=compartment.garbage)
-                    if count > 6:
-                        message = f"Ngăn {compartment.type_name_compartment} đã đầy"
-                        # Ví dụ: Sẽ hiện thông báo mới nếu sau 1h chưa đổ rác
-                        time_threshold = timezone.now() - timezone.timedelta(hours=1)
-                        recent_notify_exists = Notify.objects.filter(
-                            message=message,
-                            garbage=compartment.garbage,
-                            created_at__gt=time_threshold
-                        ).exists()
+                Notify.objects.create(
+                    message=message, garbage=compartment.garbage)
 
-                        if not recent_notify_exists:
-                            Notify.objects.create(
-                                message=message, garbage=compartment.garbage)
             query = Q(user__id=user_id)
             garbage_by_user = Garbage.objects.filter(query)
             queryset = Notify.objects.filter(
@@ -299,24 +293,6 @@ class NotifyMVS(viewsets.ModelViewSet):
         except Exception as error:
             print("NotifyMVS_get_all_notify: ", error)
         return Response({'error': 'Bad request'}, status=status.HTTP_400_BAD_REQUEST)
-
-# class PredictInforMVS(viewsets.ModelViewSet):
-#     serializer_class = PredictInforSerializers
-#     permission_classes = [IsAuthenticated]
-#     pagination_class = PredictInforPagination
-
-#     @action(methods=['GET'], detail=False, url_path="get_all_predict_infor_by_id_garbage_api", url_name="get_all_predict_infor_by_id_garbage_api")
-#     def get_all_predict_infor_by_id_garbage_api(self, request, *args, **kwargs):
-#         try:
-#             garbage_id = kwargs['id']
-#             if garbage_id == 0:
-#                 return Response(data={}, status=status.HTTP_404_NOT_FOUND)
-#             queryset = PredictInfo.objects.filter(garbage_compartment__garbage_id =garbage_id)
-#             serializer = self.serializer_class(queryset, many = True)
-#             return Response(data = serializer.data, status= status.HTTP_200_OK)
-#         except Exception as error:
-#             print("PredictInforMVS_get_all_predict_infor_by_id_garbage_api: ", error)
-#         return Response({'error': 'Bad request'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class SensorUltraMVS(viewsets.ModelViewSet):
@@ -331,17 +307,33 @@ class SensorUltraMVS(viewsets.ModelViewSet):
             # response = requests.get(esp8266_url)
             # data = response.json()
             data = {
-                "Metal": 0.5,
-                "Paper": 0.2,
-                "Plastic": 0.1,
-                "Cardboard": 0.4
+                "metal": 15,
+                "paper": 28,
+                "plastic": 0,
+                "cardboard": 9
             }
             for type_name, distance_value in data.items():
                 compartments = GarbageCompartment.objects.filter(
                     type_name_compartment=type_name)
                 for compartment in compartments:
-                    compartment.distance_is_full = distance_value
+                    compartment.distance_is_full = round(
+                        1 - (distance_value / 28), 2)
                     compartment.save()
+            # all_compartments = GarbageCompartment.objects.all()
+            # for compartment in all_compartments:
+            #     check_distance = compartment.distance_is_full
+            #     message = None
+            #     if check_distance == 1:
+            #         message = f"Ngăn {compartment.type_name_compartment} đã đầy !"
+            #     elif check_distance == 0:
+            #         message = f"Ngăn {compartment.type_name_compartment} trống !"
+            #     elif check_distance < 0.5:
+            #         message = f"Ngăn {compartment.type_name_compartment} sắp đầy !"
+            #     else:
+            #         message = f"Ngăn {compartment.type_name_compartment} bình thường !"
+
+            #     Notify.objects.create(
+            #         message=message, garbage=compartment.garbage)
             return Response(data=data, status=status.HTTP_200_OK)
         except Exception as error:
             print("SensorUltraMVS_get_distance_from_ultrasonic_sensor: ", error)
