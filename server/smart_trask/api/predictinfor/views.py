@@ -13,35 +13,8 @@ from django.db.models import Count
 from .serializers import *
 
 
-# class PredictInforPagination(PageNumberPagination):
-#     page_size = 10
-#     page_size_query_param = 'page_size'
-#     max_page_size = 10
-#     page_query_param = 'p'
-
-#     def get_paginated_response(self, data):
-#         next_page = previous_page = None
-#         if self.page.has_next():
-#             next_page = self.page.next_page_number()
-#         if self.page.has_previous():
-#             previous_page = self.page.previous_page_number()
-#         return Response({
-#             'totalRows': self.page.paginator.count,
-#             'page_size': self.page_size,
-#             'current_page': self.page.number,
-#             'next_page': next_page,
-#             'previous_page': previous_page,
-#             'links': {
-#                 'next': self.get_next_link(),
-#                 'previous': self.get_previous_link(),
-#             },
-#             'data': data,
-#         })
-
-
 class PredictInforMVS(viewsets.ModelViewSet):
     serializer_class = PredictInforSerializers
-    # pagination_class = PredictInforPagination
     permission_classes = [IsAuthenticated]
 
     @action(methods=['GET'], detail=False, url_path="get_all_predict_infor_by_id_garbage_api", url_name="get_all_predict_infor_by_id_garbage_api")
@@ -61,16 +34,11 @@ class PredictInforMVS(viewsets.ModelViewSet):
     @action(methods=['GET'], detail=False, url_path="delete_all_predict_infor_by_id_compartment_api", url_name="delete_all_predict_infor_by_id_compartment_api")
     def delete_all_predict_infor_by_id_compartment_api(self, request, *args, **kwargs):
         try:
-            # compartment_id = kwargs['id']
-            # if compartment_id == 0:
-            #     return Response(data={}, status=status.HTTP_404_NOT_FOUND)
             serializer = self.serializer_class(data=request.data)
             if serializer.is_valid():
-                data = {}
                 result = serializer.delete_predict(request)
                 if result:
-                    data['message'] = 'Delete Predict successfully!'
-                    return Response(data=data, status=status.HTTP_204_NO_CONTENT)
+                    return Response(status=status.HTTP_204_NO_CONTENT)
             return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as error:
             print(
