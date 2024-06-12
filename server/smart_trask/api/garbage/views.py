@@ -250,16 +250,16 @@ class NotifyMVS(viewsets.ModelViewSet):
             user_id = request.user.id
             if user_id == 0:
                 return Response(data={}, status=status.HTTP_404_NOT_FOUND)
-            # path = "sensors"
-            # esp8266_url = f"http://{ESP8266_IP}/{path}"
-            # response = requests.get(esp8266_url)
-            # data = response.json()
-            data = {
-                "metal": 25,
-                "paper": 24,
-                "plastic": 0,
-                "cardboard": 1
-            }
+            path = "sensors"
+            esp8266_url = f"http://{ESP8266_IP}/{path}"
+            response = requests.get(esp8266_url)
+            data = response.json()
+            # data = {
+            #     "metal": 25,
+            #     "paper": 24,
+            #     "plastic": 0,
+            #     "cardboard": 1
+            # }
             for type_name, distance_value in data.items():
                 compartments = GarbageCompartment.objects.filter(
                     type_name_compartment=type_name)
