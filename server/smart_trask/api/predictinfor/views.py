@@ -52,10 +52,6 @@ class PredictInforMVS(viewsets.ModelViewSet):
                 return Response(data={}, status=status.HTTP_404_NOT_FOUND)
             queryset = PredictInfo.objects.filter(
                 garbage_compartment__garbage_id=garbage_id).order_by('-created_at')
-            # page = self.paginate_queryset(queryset)
-            # if page is not None:
-            #     serializer = self.get_serializer(page, many=True)
-            #     return self.get_paginated_response(serializer.data)
             serializer = self.serializer_class(queryset, many=True)
             return Response(data=serializer.data, status=status.HTTP_200_OK)
         except Exception as error:

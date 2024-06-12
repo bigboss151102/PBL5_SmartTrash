@@ -1,3 +1,4 @@
+from email.policy import HTTP
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view, action
@@ -13,6 +14,8 @@ from django.utils import timezone
 
 from .serializers import *
 # from api.pagination import *
+
+ESP8266_IP = settings.ESP8266_IP
 
 
 class GarbageMVS(viewsets.ModelViewSet):
@@ -202,6 +205,47 @@ class GarbageCompartmentMVS(viewsets.ModelViewSet):
             print("GarbageMVS_get_id_compartment_by_id_garbage_api: ", error)
             return Response({'error': 'Bad request'}, status=status.HTTP_400_BAD_REQUEST)
 
+    @action(methods=['GET'], detail=False, url_path="get_average_distance_is_full_compartment_by_all_garbage_api", url_name="get_average_distance_is_full_compartment_by_all_garbage_api")
+    def get_average_distance_is_full_compartment_by_all_garbage_api(self, request, *args, **kwargs):
+        try:
+            data_list = []
+
+            subquery = Garbage.objects.filter(id=OuterRef(
+                'garbage_id')).values('name_country')
+
+            average_distances = GarbageCompartment.objects.filter(
+                garbage__name_country__in=subquery
+            ).values('garbage__name_country', 'type_name_compartment').annotate(avg_distance=Avg('distance_is_full'))
+
+            for compartment in average_distances:
+                name_country = compartment['garbage__name_country']
+                compartment_type = compartment['type_name_compartment']
+                avg_distance = compartment['avg_distance']
+
+                found = False
+                for data in data_list:
+                    if data["name_country"] == name_country:
+                        found = True
+                        data["value_average"][compartment_type] = avg_distance
+                        break
+
+                if not found:
+                    data_list.append({
+                        "name_country": name_country,
+                        "value_average": {
+                            "Metal": 0,
+                            "Plastic": 0,
+                            "Paper": 0,
+                            "Cardboard": 0
+                        }
+                    })
+                    data_list[-1]["value_average"][compartment_type] = avg_distance
+            return Response(data=data_list, status=status.HTTP_200_OK)
+        except Exception as error:
+            print(
+                "GarbageCompartmentMVS_get_distance_is_full_compartment_by_id_api: ", error)
+        return Response({'error': 'Bad request'}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class NotifyMVS(viewsets.ModelViewSet):
 
@@ -273,3 +317,32 @@ class NotifyMVS(viewsets.ModelViewSet):
 #         except Exception as error:
 #             print("PredictInforMVS_get_all_predict_infor_by_id_garbage_api: ", error)
 #         return Response({'error': 'Bad request'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class SensorUltraMVS(viewsets.ModelViewSet):
+
+    permission_classes = [IsAuthenticated]
+
+    @action(methods=['GET'], detail=False, url_path="get_distance_from_ultrasonic_sensor", url_name="get_distance_from_ultrasonic_sensor")
+    def get_distance_from_ultrasonic_sensor(self, request, *args, **kwargs):
+        try:
+            # path = "sensors"
+            # esp8266_url = f"http://{ESP8266_IP}/{path}"
+            # response = requests.get(esp8266_url)
+            # data = response.json()
+            data = {
+                "Metal": 0.5,
+                "Paper": 0.2,
+                "Plastic": 0.1,
+                "Cardboard": 0.4
+            }
+            for type_name, distance_value in data.items():
+                compartments = GarbageCompartment.objects.filter(
+                    type_name_compartment=type_name)
+                for compartment in compartments:
+                    compartment.distance_is_full = distance_value
+                    compartment.save()
+            return Response(data=data, status=status.HTTP_200_OK)
+        except Exception as error:
+            print("SensorUltraMVS_get_distance_from_ultrasonic_sensor: ", error)
+        return Response(data="Don't get infor from ultrasonic sensor !", status=status.HTTP_400_BAD_REQUEST)

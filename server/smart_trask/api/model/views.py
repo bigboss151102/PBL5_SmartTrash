@@ -76,8 +76,8 @@ class ImageClassifierMVS(viewsets.ModelViewSet):
             print("Max value: ", max_value)
 
             switcher = {
-                0: 'cardboard', 1: 'metal',
-                2: 'nothing', 3: 'paper', 4: 'plastic'
+                0: 'Cardboard', 1: 'Metal',
+                2: 'Nothing', 3: 'Paper', 4: 'Plastic'
             }
             prediction = switcher.get(max_index)
 
@@ -133,8 +133,8 @@ class ImageClassifierMVS(viewsets.ModelViewSet):
                 prediction_prob = model.predict(test_img)
                 max_index = np.argmax(prediction_prob)
                 max_value = prediction_prob[0][max_index]
-                switcher = {0: 'cardboard', 1: 'metal',
-                            2: 'nothing', 3: 'paper', 4: 'plastic'}
+                switcher = {0: 'Cardboard', 1: 'Metal',
+                            2: 'Nothing', 3: 'Paper', 4: 'Plastic'}
                 prediction = switcher.get(max_index)
 
                 predict_percent = max_value * 100
