@@ -271,14 +271,8 @@ class NotifyMVS(viewsets.ModelViewSet):
             for compartment in all_compartments:
                 check_distance = compartment.distance_is_full
                 message = None
-                if check_distance == 1:
+                if check_distance > 0.9:
                     message = f"Ngăn {compartment.type_name_compartment} đã đầy !"
-                elif check_distance == 0:
-                    message = f"Ngăn {compartment.type_name_compartment} trống !"
-                elif check_distance < 0.5:
-                    message = f"Ngăn {compartment.type_name_compartment} sắp đầy !"
-                else:
-                    message = f"Ngăn {compartment.type_name_compartment} bình thường !"
 
                 Notify.objects.create(
                     message=message, garbage=compartment.garbage)
