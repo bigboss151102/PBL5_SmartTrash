@@ -4,10 +4,7 @@
 - [Description](#description)
 - [Design System](#design-system)
 - [Installation Guide](#installation-guide)
-- [Usage](#usage)
-- [Directory Structure](#directory-structure)
 - [Contributing](#contributing)
-- [License](#license)
 - [Contact](#contact)
 
 # Description
@@ -55,18 +52,34 @@ pip install psycopg2==2.9.9
 pip install python-dotenv==1.0.1
 pip install tensorflow==2.15.0
 pip install djangorestframework-simplejwt
-
-## Usage
-Instructions for users on how to use your product or service, including configurations, basic commands, and illustrative examples.
-
-## Directory Structure
-Describe the project's directory structure, making it easy for readers to locate important parts such as source code, documentation, data, etc.
-
-## Contributing
-Guide users on how to contribute to your project, including pull request processes and naming/formatting conventions.
+```
 
 ## License
-Specify the terms and conditions for licensing, allowing reuse of the source code, including popular licenses such as MIT, Apache, etc.
+This project is licensed under the [MIT License](https://opensource.org/licenses/MIT) - see the [LICENSE](LICENSE) file for details.
+
+You are free to:
+- Use the source code for personal or commercial purposes.
+- Modify the source code.
+- Distribute copies of the source code.
+
+Under the following conditions:
+- Include the original copyright notice and license in any copy of the project.
+- State any changes made to the code.
+- Include a disclaimer stating that the software is provided "as is", without warranty of any kind.
+
+You are not required to:
+- Provide the source code or changes back to the community.
+- Share any modifications you make to the source code.
+
+By contributing to this repository, you agree to license your contributions under the same terms.
+
+For questions or inquiries about commercial licensing, please contact [hoangcongtrong02.dut@gmail.com].
 
 ## Contact
-Provide contact information for questions, contributions, or bug reports.
+For questions, contributions, or bug reports, please feel free to reach out:
+
+- Email: [hoangcongtrong02.dut@gmail.com](hoangcongtrong02.dut@gmail.com)
+- Linkedin: [https://www.linkedin.com/in/hoangtrong151102/](https://www.linkedin.com/in/hoangtrong151102/)
+- Instagram: [https://www.instagram.com/h.c.trong_02/](https://www.instagram.com/h.c.trong_02/)
+
+We appreciate your feedback and involvement!
