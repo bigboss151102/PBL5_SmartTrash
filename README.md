@@ -33,15 +33,28 @@
 
 
 # Design System
-## 1.Model
+## 1. Model
 ![Desigin Bin](./images/design_bin.png)
-## 2.IOT System
+## 2. IOT System
 ![Desigin Bin](./images/design_system.png)
-## 3.AI Flow
+## 3. AI Flow
 ![Desigin Bin](./images/ai_flow.png)
 
 ## Installation Guide
-Detailed instructions on setting up the development environment and required software to run the project.
+Ensure you have Python 3.9+ installed. Then, install the required dependencies using pip:
+
+```bash
+pip install Django==4.2.10
+pip install djangorestframework==3.14.0
+pip install google-auth==2.28.1
+pip install google-auth-oauthlib==1.2.0
+pip install keras==2.15.0
+pip install numpy==1.26.4
+pip install pillow==10.2.0
+pip install psycopg2==2.9.9
+pip install python-dotenv==1.0.1
+pip install tensorflow==2.15.0
+pip install djangorestframework-simplejwt
 
 ## Usage
 Instructions for users on how to use your product or service, including configurations, basic commands, and illustrative examples.
