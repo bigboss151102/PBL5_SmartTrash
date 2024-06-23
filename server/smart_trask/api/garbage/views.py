@@ -250,33 +250,33 @@ class NotifyMVS(viewsets.ModelViewSet):
             user_id = request.user.id
             if user_id == 0:
                 return Response(data={}, status=status.HTTP_404_NOT_FOUND)
-            path = "sensors"
-            esp8266_url = f"http://{ESP8266_IP}/{path}"
-            response = requests.get(esp8266_url)
-            data = response.json()
-            # data = {
-            #     "metal": 25,
-            #     "paper": 24,
-            #     "plastic": 0,
-            #     "cardboard": 1
-            # }
+            # path = "sensors"
+            # esp8266_url = f"http://{ESP8266_IP}/{path}"
+            # response = requests.get(esp8266_url)
+            # data = response.json()
+            data = {
+                "metal": 25,
+                "paper": 4,
+                "plastic": 24,
+                "cardboard": 2
+            }
             for type_name, distance_value in data.items():
                 compartments = GarbageCompartment.objects.filter(
-                    type_name_compartment=type_name)
+                    type_name_compartment=type_name, garbage_id=1)
                 for compartment in compartments:
                     compartment.distance_is_full = round(
                         1 - (distance_value / 28), 2)
                     compartment.save()
-            all_compartments = GarbageCompartment.objects.all()
+            all_compartments = GarbageCompartment.objects.filter(garbage_id=1)
+            print(all_compartments)
             for compartment in all_compartments:
                 check_distance = compartment.distance_is_full
+                print(check_distance)
                 message = None
                 if check_distance > 0.9:
                     message = f"Ngăn {compartment.type_name_compartment} đã đầy !"
-
-                Notify.objects.create(
-                    message=message, garbage=compartment.garbage)
-
+                    Notify.objects.create(
+                        message=message, garbage=compartment.garbage)
             query = Q(user__id=user_id)
             garbage_by_user = Garbage.objects.filter(query)
             queryset = Notify.objects.filter(
