@@ -1,5 +1,13 @@
 # Smart Trash Project
-
+## Table of Contents
+- [Description](#Description)
+- [Design System](#Design System)
+- [Installation Guide](#installation-guide)
+- [Usage](#usage)
+- [Directory Structure](#directory-structure)
+- [Contributing](#contributing)
+- [License](#license)
+- [Contact](#contact)
 # Description
 ## 1. Design and Build of Smart Trash Bins:
 - We have designed and constructed smart trash bins that are compact and suitable for various public settings such as schools, parks, residential areas, and commercial zones.
@@ -22,18 +30,12 @@
 - It provides an intuitive interface for administrators to track fill levels, optimize collection routes, and promptly respond to bin capacity.
 
 # Design System
+## Model
 ![Desigin Bin](./images/design_bin.png)
-## Table of Contents
-- [Summary](#summary)
-- [Installation Guide](#installation-guide)
-- [Usage](#usage)
-- [Directory Structure](#directory-structure)
-- [Contributing](#contributing)
-- [License](#license)
-- [Contact](#contact)
-
-## Summary
-Provide an overview of the project, including its purpose, key features, and benefits.
+## IOT System
+![Desigin Bin](./images/design_system.png)
+## AI Flow
+![Desigin Bin](./images/ai_flow.png)
 
 ## Installation Guide
 Detailed instructions on setting up the development environment and required software to run the project.
