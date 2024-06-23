@@ -50,7 +50,7 @@ class ImageClassifierMVS(viewsets.ModelViewSet):
         if serializer.is_valid():
             image = serializer.validated_data['image']
             img = Image.open(image)
-            img = img.resize((350, 350))
+            img = img.resize((384, 384))
             img_array = np.array(img)
             test_img = np.expand_dims(img_array, axis=0)
 
